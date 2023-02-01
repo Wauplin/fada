@@ -42,7 +42,7 @@ parser.add_argument('--dataset-config', nargs='+', default=['glue', 'sst2'],
                     type=str, help='dataset info needed for load_dataset.')
 parser.add_argument('--dataset-keys', nargs='+', default=['text'],
                     type=str, help='dataset info needed for load_dataset.')
-parser.add_argument('--models', nargs='+',  default=['prajjwal1/bert-tiny', 'bert-base-uncased', 'bert-large-uncased'], 
+parser.add_argument('--models', nargs='+',  default=['prajjwal1/bert-tiny', 'bert-base-uncased'], 
                     type=str, help='pretrained huggingface models to train')
 parser.add_argument('--save-file', type=str, default='train_results.csv',
                     help='name for the csv file to save with results')
