@@ -26,6 +26,13 @@
     "idx": {
       "dtype": "int32",
       "_type": "Value"
+    },
+    "transforms_applied": {
+      "feature": {
+        "dtype": "string",
+        "_type": "Value"
+      },
+      "_type": "Sequence"
     }
   },
   "homepage": "https://datasets.stanford.edu/sentiment/index.html",
