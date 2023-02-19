@@ -29,7 +29,7 @@ torch.use_deterministic_algorithms(False)
 parser = argparse.ArgumentParser(description='TextDiversity Trainer')
 
 parser.add_argument('--techniques', nargs='+', 
-                    default=['orig', 'uniform', 'fada'],
+                    default=['fada_v2'],
                     type=str, help='technique used to generate paraphrases')
 parser.add_argument('--dataset-config', nargs='+', default=['glue', 'sst2'],
                     type=str, help='dataset info needed for load_dataset.')
@@ -57,7 +57,7 @@ parser.add_argument('--gpus', default='0,1,2,3', type=str,
                     help='id(s) for CUDA_VISIBLE_DEVICES')
 parser.add_argument('--num_runs', default=3, type=int, metavar='N',
                     help='number of times to repeat the training')
-parser.add_argument('--save-file', type=str, default='./results/train_results.csv',
+parser.add_argument('--save-file', type=str, default='./results/train_results_fada_v2.csv',
                     help='name for the csv file to save with results')
 
 args = parser.parse_args()
@@ -119,7 +119,7 @@ def train(args):
         raw_datasets = load_dataset(*args.dataset_config)
         if 'sst2' in args.dataset_config:
             raw_datasets.pop("test") # test set is not usable (all labels -1)
-            raw_datasets["train"] = raw_datasets["train"].select(range(1000))
+            raw_datasets["train"] = raw_datasets["train"]
 
         if technique != "orig":
             save_name = ".".join(args.dataset_config) + ".sibyl." + technique
