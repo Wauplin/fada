@@ -1,8 +1,25 @@
-Average of eval_f1,Column Labels,,
-Row Labels,bert-base-uncased,prajjwal1/bert-tiny,Grand Total
-fada,0.8934,0.7845,0.8390
-fada_v2,0.9043,0.7729,0.8386
-fada_v2_inverselikelihood,0.8952,0.8027,0.8489
-orig,0.9136,0.7783,0.8459
-uniform,0.8999,0.7791,0.8395
-Grand Total,0.9013,0.7835,0.8424
+eval_loss,eval_accuracy,eval_precision,eval_recall,eval_f1,eval_runtime,eval_samples_per_second,eval_steps_per_second,epoch,run_num,technique,model_checkpoint,checkpoint,dataset_config,train_size,valid_size,test_size,run_time
+0.296249539,0.892201835,0.892272485,0.892201835,0.892119244,1.3504,322.878,20.735,1.2,0,fada,bert-base-uncased,./pretrained/bert-base-uncased-glue_sst2_fada,"['glue', 'sst2']",134698,436,436,2567.271202
+0.239042044,0.910550459,0.912304076,0.910550459,0.91061779,1.2846,339.407,21.797,1.1,1,fada,bert-base-uncased,./pretrained/bert-base-uncased-glue_sst2_fada,"['glue', 'sst2']",134698,436,436,2366.247139
+0.354922891,0.878440367,0.883581286,0.878440367,0.877547609,1.3525,322.371,20.703,1.3,2,fada,bert-base-uncased,./pretrained/bert-base-uncased-glue_sst2_fada,"['glue', 'sst2']",134698,436,436,2779.908543
+0.293193996,0.908256881,0.912161666,0.908256881,0.908295493,1.8383,237.178,15.232,1.2,0,fada_v2,bert-base-uncased,./pretrained/bert-base-uncased-glue_sst2_fada_v2,"['glue', 'sst2']",134698,436,436,3739.951051
+0.292892694,0.901376147,0.901840435,0.901376147,0.901221172,1.8844,231.378,14.859,1.3,1,fada_v2,bert-base-uncased,./pretrained/bert-base-uncased-glue_sst2_fada_v2,"['glue', 'sst2']",134698,436,436,4034.239419
+0.283107698,0.903669725,0.904612403,0.903669725,0.903449308,2.0196,215.888,13.864,1.1,2,fada_v2,bert-base-uncased,./pretrained/bert-base-uncased-glue_sst2_fada_v2,"['glue', 'sst2']",134698,436,436,3407.020207
+0.317054629,0.912844037,0.912922965,0.912844037,0.912864261,1.4081,309.644,19.885,1.9,0,orig,bert-base-uncased,./pretrained/bert-base-uncased-glue_sst2_orig,"['glue', 'sst2']",67349,436,436,2039.476699
+0.321794331,0.912844037,0.913227176,0.912844037,0.912726029,1.3045,334.225,21.464,1.6,1,orig,bert-base-uncased,./pretrained/bert-base-uncased-glue_sst2_orig,"['glue', 'sst2']",67349,436,436,1721.063942
+0.267022252,0.915137615,0.916038199,0.915137615,0.915197953,1.2572,346.801,22.272,1.7,2,orig,bert-base-uncased,./pretrained/bert-base-uncased-glue_sst2_orig,"['glue', 'sst2']",67349,436,436,1815.084561
+0.299013913,0.905963303,0.906058717,0.905963303,0.905891255,1.3716,317.878,20.414,2,0,uniform,bert-base-uncased,./pretrained/bert-base-uncased-glue_sst2_uniform,"['glue', 'sst2']",134698,436,436,4563.552379
+0.313043296,0.892201835,0.897206309,0.892201835,0.892214878,1.3227,329.64,21.17,1.1,1,uniform,bert-base-uncased,./pretrained/bert-base-uncased-glue_sst2_uniform,"['glue', 'sst2']",134698,436,436,2536.694024
+0.327361077,0.901376147,0.902284551,0.901376147,0.901446269,1.3678,318.77,20.471,1.1,2,uniform,bert-base-uncased,./pretrained/bert-base-uncased-glue_sst2_uniform,"['glue', 'sst2']",134698,436,436,2518.501977
+0.506586194,0.798165138,0.800587521,0.798165138,0.798301088,0.1853,2353.131,151.118,1.8,0,fada,prajjwal1/bert-tiny,./pretrained/prajjwal1/bert-tiny-glue_sst2_fada,"['glue', 'sst2']",134698,436,436,625.3579056
+0.503562152,0.763761468,0.765474931,0.763761468,0.763939292,0.1844,2364.586,151.854,1.3,1,fada,prajjwal1/bert-tiny,./pretrained/prajjwal1/bert-tiny-glue_sst2_fada,"['glue', 'sst2']",134698,436,436,442.2201481
+0.514823258,0.791284404,0.795750259,0.791284404,0.791309657,0.1875,2324.976,149.31,1.8,2,fada,prajjwal1/bert-tiny,./pretrained/prajjwal1/bert-tiny-glue_sst2_fada,"['glue', 'sst2']",134698,436,436,609.2355113
+0.506063044,0.775229358,0.776343923,0.775229358,0.774735722,0.272,1603.167,102.956,1.5,0,fada_v2,prajjwal1/bert-tiny,./pretrained/prajjwal1/bert-tiny-glue_sst2_fada_v2,"['glue', 'sst2']",134698,436,436,643.6246445
+0.50451827,0.766055046,0.768434172,0.766055046,0.766212624,0.2394,1821.017,116.946,1.3,1,fada_v2,prajjwal1/bert-tiny,./pretrained/prajjwal1/bert-tiny-glue_sst2_fada_v2,"['glue', 'sst2']",134698,436,436,538.3069139
+0.512256086,0.777522936,0.779679908,0.777522936,0.777680999,0.2355,1851.51,118.904,1.8,2,fada_v2,prajjwal1/bert-tiny,./pretrained/prajjwal1/bert-tiny-glue_sst2_fada_v2,"['glue', 'sst2']",134698,436,436,698.3382106
+0.52630347,0.766055046,0.765930935,0.766055046,0.765847438,0.2094,2082.048,133.709,1.9,0,orig,prajjwal1/bert-tiny,./pretrained/prajjwal1/bert-tiny-glue_sst2_orig,"['glue', 'sst2']",67349,436,436,350.1149311
+0.500477254,0.786697248,0.791832431,0.786697248,0.786669196,0.1815,2401.92,154.252,1.9,1,orig,prajjwal1/bert-tiny,./pretrained/prajjwal1/bert-tiny-glue_sst2_orig,"['glue', 'sst2']",67349,436,436,325.9570165
+0.505101025,0.782110092,0.783828574,0.782110092,0.782274104,0.1825,2388.475,153.388,1.8,2,orig,prajjwal1/bert-tiny,./pretrained/prajjwal1/bert-tiny-glue_sst2_orig,"['glue', 'sst2']",67349,436,436,310.2066016
+0.523368835,0.733944954,0.738406249,0.733944954,0.733944954,0.209,2085.876,133.955,1.2,0,uniform,prajjwal1/bert-tiny,./pretrained/prajjwal1/bert-tiny-glue_sst2_uniform,"['glue', 'sst2']",134698,436,436,435.803247
+0.532689512,0.805045872,0.810306982,0.805045872,0.805020233,0.1835,2375.716,152.569,2.4,1,uniform,prajjwal1/bert-tiny,./pretrained/prajjwal1/bert-tiny-glue_sst2_uniform,"['glue', 'sst2']",134698,436,436,826.1947813
+0.508538485,0.798165138,0.79829243,0.798165138,0.798211974,0.2154,2023.911,129.976,1.9,2,uniform,prajjwal1/bert-tiny,./pretrained/prajjwal1/bert-tiny-glue_sst2_uniform,"['glue', 'sst2']",134698,436,436,650.4121966
