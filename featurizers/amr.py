@@ -1,4 +1,90 @@
 import penman
+import amrlib
+import numpy as np
+
+class AMRFeatureExtractor:
+    
+    def __init__(self):
+        self.featurizers = featurizers = [    
+            contains_accompanier,
+            contains_age,
+            contains_beneficiary,
+            contains_concession,
+            contains_condition,
+            contains_conjunctions,
+            contains_consist_of,
+            contains_coreferences,
+            contains_degree,
+            contains_destination,
+            contains_direction,
+            contains_domain,
+            contains_duration,
+            contains_example,
+            contains_exlamation,
+            contains_extent,
+            contains_frequency,
+            contains_imperative,
+            contains_instrument,
+            contains_interrogative_clause,
+            contains_location,
+            contains_manner,
+            contains_medium,
+            contains_mod,
+            contains_mode,
+            contains_name,
+            contains_negation,
+            contains_number,
+            contains_ord,
+            contains_part,
+            contains_path,
+            contains_polarity,
+            contains_polite,
+            contains_poss,
+            contains_purpose,
+            contains_quant,
+            contains_question,
+            contains_range,
+            contains_scale,
+            contains_source,
+            contains_subevent,
+            contains_time,
+            contains_topic,
+            contains_unit
+        ]
+        self.featurizers = sorted(featurizers, key=lambda f: f.__name__)
+        self.amr_model   = None
+        
+    def load_amr_model(self, max_sent_len=128):
+        self.amr_model = amrlib.load_stog_model(max_sent_len=max_sent_len)
+        
+    def text_to_amr(self, texts):
+        if self.amr_model is None:
+            self.load_amr_model()
+        amr_penmans = self.amr_model.parse_sents(texts, add_metadata=False, disable_progress=True)
+        amr_graphs = []
+        for p in amr_penmans:
+            try:
+                amr_graphs.append(AMRGraph(p))
+            except Exception as e: 
+                print(e)
+                print(p)
+                amr_graphs.append(AMRGraph(p))
+        return amr_graphs
+    
+    def generate_feature_matrix(self, graphs):
+        feature_matrix = []
+        for g in graphs:
+            feature_vector = []
+            for f in self.featurizers:
+                feature_vector.append(f(g))
+            feature_matrix.append(feature_vector)
+        feature_matrix = np.array(feature_matrix, dtype=np.int32)
+        return feature_matrix
+    
+    def __call__(self, texts):
+        graphs = self.text_to_amr(texts)
+        return self.generate_feature_matrix(graphs)
+        
 
 class AMRGraph:
     def __init__(self, amr):
