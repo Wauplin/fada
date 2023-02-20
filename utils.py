@@ -1,6 +1,11 @@
 import numpy as np
+import torch
 from sibyl import acc_at_k
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# helper functions
 
 def normalize_minmax(df):
     for column in df.columns:
@@ -50,11 +55,38 @@ def compute_accuracy(predictions, labels):
 
 def vectorize(output):
     sorted_output = sorted(output, key=lambda d: d['label']) 
-    probs = np.array([d['score'] for d in sorted_output])
+    probs = torch.tensor([d['score'] for d in sorted_output])
     return probs
 
 def sample_transforms(transforms, p, n=2, replace=False):
     return np.random.choice(transforms, size=n, p=p, replace=replace).tolist()
+
+def policy_heatmap(policy, transforms, featurizers):
+    t_names = [t.transform_class.__name__ for t in transforms]
+    f_names = [f.__name__ for f in featurizers]
+    df = pd.DataFrame(policy)
+    df.columns = f_names
+    df.index = t_names
+    sns.heatmap(df)
+    plt.show()
+    
+def implement_policy_probabilities(policy, features):
+    default_probability = policy.mean(axis=1)
+    policy_probs = []
+    for f in features:
+        available_features = np.nonzero(f)[0]
+        if len(available_features) == 0:
+            probs = default_probability
+        else:
+            probs = policy[:, available_features].mean(axis=1)
+        policy_probs.append(probs)
+    return np.array(policy_probs)
+
+def transforms_to_ids(sampled_transforms, all_transforms):
+    transforms_ids = [all_transforms.index(i) for i in sampled_transforms]
+    transforms_applied = np.zeros(len(all_transforms), dtype=np.int32)
+    transforms_applied[transforms_ids] = 1
+    return transforms_applied
 
 def prepare_splits(dataset_dict, train_val_split = 0.9, val_test_split = 0.5):
     has_train = has_val = has_test = False
