@@ -26,10 +26,10 @@ torch.use_deterministic_algorithms(False)
 
 # argparse
 
-parser = argparse.ArgumentParser(description='TextDiversity Trainer')
+parser = argparse.ArgumentParser(description='FADA Trainer')
 
 parser.add_argument('--techniques', nargs='+', 
-                    default=['fada_v2'],
+                    default=['fada_v2_likelihoodshift', 'fada_v2_likelihoodshiftpos'],
                     type=str, help='technique used to generate paraphrases')
 parser.add_argument('--dataset-config', nargs='+', default=['glue', 'sst2'],
                     type=str, help='dataset info needed for load_dataset.')
