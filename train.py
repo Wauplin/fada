@@ -29,8 +29,17 @@ torch.use_deterministic_algorithms(False)
 parser = argparse.ArgumentParser(description='FADA Trainer')
 
 parser.add_argument('--techniques', nargs='+', 
-                    default=['fada_v2_likelihoodshift', 'fada_v2_likelihoodshiftpos'],
-                    type=str, help='technique used to generate paraphrases')
+                    default=['fada_v2_CleanLabSafe_sum',
+                             'fada_v2_CleanLabSafe_avg',
+                             'fada_v2_LikelihoodShiftPos_sum',
+                             'fada_v2_LikelihoodShiftPos_avg',
+                             'fada_v2_LikelihoodShiftNeg_sum',
+                             'fada_v2_LikelihoodShiftNeg_avg',
+                             'fada_v2_Likelihood_sum',
+                             'fada_v2_Likelihood_avg',
+                             'fada_v2_InverseLikelihood_sum',
+                             'fada_v2_InverseLikelihood_avg'],
+                    type=str, help='technique used to generate augmented data')
 parser.add_argument('--dataset-config', nargs='+', default=['glue', 'sst2'],
                     type=str, help='dataset info needed for load_dataset.')
 parser.add_argument('--dataset-keys', nargs='+', default=['text'],
