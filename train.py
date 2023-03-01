@@ -24,12 +24,25 @@ from utils import *
 random.seed(130)
 torch.use_deterministic_algorithms(False)
 
+os.environ["WANDB_DISABLED"] = "true"
+
 # argparse
 
 parser = argparse.ArgumentParser(description='FADA Trainer')
 
 parser.add_argument('--techniques', nargs='+', 
-                    default=['nlaug.uniform'],
+                    default=[
+                            'sibyl.fada_v2_CleanLabSafe_sum',
+                            'sibyl.fada_v2_LikelihoodShiftPos_sum',
+                            'sibyl.fada_v2_LikelihoodShiftNeg_sum',
+                            'sibyl.fada_v2_Likelihood_sum',
+                            'sibyl.fada_v2_InverseLikelihood_sum',
+                            'sibyl.fada_v2_CleanLabSafe_avg',
+                            'sibyl.fada_v2_LikelihoodShiftPos_avg',
+                            'sibyl.fada_v2_LikelihoodShiftNeg_avg',
+                            'sibyl.fada_v2_Likelihood_avg',
+                            'sibyl.fada_v2_InverseLikelihood_avg'
+                            ],
                     type=str, help='technique used to generate augmented data')
 parser.add_argument('--dataset-config', nargs='+', default=['glue', 'sst2'],
                     type=str, help='dataset info needed for load_dataset.')
@@ -57,7 +70,7 @@ parser.add_argument('--gpus', default='0,1,2,3', type=str,
                     help='id(s) for CUDA_VISIBLE_DEVICES')
 parser.add_argument('--num_runs', default=3, type=int, metavar='N',
                     help='number of times to repeat the training')
-parser.add_argument('--save-file', type=str, default='./results/train_results_nlaug_uniform.csv',
+parser.add_argument('--save-file', type=str, default='./results/train_results_sibyl_all.csv',
                     help='name for the csv file to save with results')
 
 args = parser.parse_args()
