@@ -32,16 +32,19 @@ parser = argparse.ArgumentParser(description='FADA Trainer')
 
 parser.add_argument('--techniques', nargs='+', 
                     default=[
-                            'sibyl.fada_v2_CleanLabSafe_sum',
-                            'sibyl.fada_v2_LikelihoodShiftPos_sum',
-                            'sibyl.fada_v2_LikelihoodShiftNeg_sum',
-                            'sibyl.fada_v2_Likelihood_sum',
-                            'sibyl.fada_v2_InverseLikelihood_sum',
-                            'sibyl.fada_v2_CleanLabSafe_avg',
-                            'sibyl.fada_v2_LikelihoodShiftPos_avg',
-                            'sibyl.fada_v2_LikelihoodShiftNeg_avg',
-                            'sibyl.fada_v2_Likelihood_avg',
-                            'sibyl.fada_v2_InverseLikelihood_avg'
+                        'sibyl.fada_v2_Original.50',
+                        'sibyl.uniform.550',
+                        'sibyl.fada_v2_CleanLabSafe_avg.550',
+                        'sibyl.fada_v2_CleanLabSafe_sum.550',
+                        'sibyl.fada_v2_InverseLikelihood_avg.550',
+                        'sibyl.fada_v2_InverseLikelihood_sum.550',
+                        'sibyl.fada_v2_LikelihoodShiftNeg_avg.550',
+                        'sibyl.fada_v2_LikelihoodShiftNeg_sum.550',
+                        'sibyl.fada_v2_LikelihoodShiftPos_avg.550',
+                        'sibyl.fada_v2_LikelihoodShiftPos_sum.550',
+                        'sibyl.fada_v2_Likelihood_avg.550',
+                        'sibyl.fada_v2_Likelihood_sum.550',
+                        'sibyl.fada_v2_Original.100',
                             ],
                     type=str, help='technique used to generate augmented data')
 parser.add_argument('--dataset-config', nargs='+', default=['glue', 'sst2'],
@@ -50,7 +53,7 @@ parser.add_argument('--dataset-keys', nargs='+', default=['text'],
                     type=str, help='dataset info needed for load_dataset.')
 parser.add_argument('--models', nargs='+',  default=['prajjwal1/bert-tiny', 'bert-base-uncased'], 
                     type=str, help='pretrained huggingface models to train')
-parser.add_argument('--data-dir', type=str, default="./datasets/",
+parser.add_argument('--data-dir', type=str, default="./datasets/study/",
                     help='path to data folders')
 parser.add_argument('--save-dir', type=str, default="./pretrained/",
                     help='path to data folders')
@@ -62,7 +65,7 @@ parser.add_argument('--early_stopping_patience', default=10, type=int, metavar='
                     help='number of times the validation metric can be lower before stopping training')
 parser.add_argument('--gradient_accumulation_steps', default=1, type=int, metavar='N',
                     help='number of steps before updating the model weights')
-parser.add_argument('--train-batch-size', default=8, type=int, metavar='N',
+parser.add_argument('--train-batch-size', default=2, type=int, metavar='N',
                     help='train batchsize')
 parser.add_argument('--eval-batch-size', default=16, type=int, metavar='N',
                     help='eval batchsize') 
@@ -70,7 +73,7 @@ parser.add_argument('--gpus', default='0,1,2,3', type=str,
                     help='id(s) for CUDA_VISIBLE_DEVICES')
 parser.add_argument('--num_runs', default=3, type=int, metavar='N',
                     help='number of times to repeat the training')
-parser.add_argument('--save-file', type=str, default='./results/train_results_sibyl_all.csv',
+parser.add_argument('--save-file', type=str, default='./results/da_study_results.csv',
                     help='name for the csv file to save with results')
 
 args = parser.parse_args()
@@ -134,17 +137,17 @@ def train(args):
             raw_datasets.pop("test") # test set is not usable (all labels -1)
             raw_datasets["train"] = raw_datasets["train"]
 
-        if technique != "orig":
-            save_name = ".".join(args.dataset_config) + "." + technique
-            save_path = os.path.join(args.data_dir, save_name)
-            train_dataset = load_from_disk(save_path)
-            raw_datasets["train"] = train_dataset
-
         raw_datasets = prepare_splits(raw_datasets)
         raw_datasets = rename_text_columns(raw_datasets)
         raw_datasets = raw_datasets.shuffle(seed=run_num)
 
         num_labels = len(raw_datasets["train"].features["label"].names)
+
+        if technique != "orig":
+            save_name = ".".join(args.dataset_config) + "." + technique
+            save_path = os.path.join(args.data_dir, save_name)
+            train_dataset = load_from_disk(save_path)
+            raw_datasets["train"] = train_dataset
 
         print(raw_datasets)
         print('Number of classes:', num_labels)
@@ -197,6 +200,8 @@ def train(args):
 
         max_steps = (len(tokenized_datasets["train"]) * args.num_epochs // args.gradient_accumulation_steps) // args.train_batch_size
         logging_steps = (max_steps // args.num_epochs) // args.logging_steps_per_epoch
+
+        print(max_steps, logging_steps)
 
         training_args = TrainingArguments(
             output_dir=checkpoint,
