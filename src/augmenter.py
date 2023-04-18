@@ -162,7 +162,7 @@ if __name__ == '__main__':
     dataset_config = ("glue", "sst2")
     task_name = "sentiment"
 
-    dataset = load_dataset(*dataset_config, split="train[:50]")
+    dataset = load_dataset(*dataset_config, split="train[:1000]")
     dataset = dataset.rename_column("sentence", "text")
 
     transforms = [

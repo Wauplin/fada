@@ -1,6 +1,8 @@
-from fada import FADA
-from transform import Transform
-from eval_pipelines import TestPipeline, TrainPipeline
-from augmenter import Augmenter
-from featurizers.amr import AMRFeatureExtractor
-from utils import *
+from .transform import Transform
+from .augmenter import Augmenter
+from .utils import *
+
+from .extractors.amr import AMRFeatureExtractor
+from .extractors.alignment import AlignmentMetric
+
+name = "fada"
