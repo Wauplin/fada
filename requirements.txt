@@ -2,3 +2,4 @@ datasets
 textdiversity
 sibyl-tool
 evaluate
+hydra-core
