@@ -5,3 +5,4 @@ cache-*
 pretrained/
 wandb/
 logs/
+outputs/

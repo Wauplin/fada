@@ -1,0 +1,26 @@
+defaults:
+    - _self_
+    - transforms: sibyl
+    - features: amr
+
+working_dir: "./fadata/"
+dataset_dir: "./fadata/datasets/"
+tfim_dir: "./fadata/tfim/"
+
+dataset:
+    builder_name: "glue"
+    config_name: "sst2"
+    text_key: "sentence"
+    task_name: "sentiment"
+
+fada:
+    min_coverage: 128
+    num_to_transform_per_step: 128
+    max_iterations: 8
+    num_transforms_to_apply: 1
+    num_augmentations_per_record: 1
+    batch_size: 8
+    c_a: 0.8
+    c_f: 0.1
+    c_g: 0.1
+
