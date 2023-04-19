@@ -2,4 +2,5 @@ datasets
 textdiversity
 sibyl-tool
 evaluate
+language_tool_python
 hydra-core
