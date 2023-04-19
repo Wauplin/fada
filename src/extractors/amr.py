@@ -114,7 +114,7 @@ class AMRFeatureExtractor:
     def text_to_amr(self, texts):
         if self.amr_model is None:
             self.load_amr_model()
-        amr_penmans = self.amr_model.parse_sents(texts, add_metadata=False) # disable_progress=True
+        amr_penmans = self.amr_model.parse_sents(texts, add_metadata=False, disable_progress=False)
         amr_graphs = []
         for p in amr_penmans:
             try:
