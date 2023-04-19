@@ -1,7 +1,0 @@
-fada\eval>python ../fada.py dataset.builder_name=ag_news dataset.config_name=default dataset.text_key=text dataset.task_name=topic
-
-dataset:
-    builder_name: "glue"
-    config_name: "sst2"
-    text_key: "sentence"
-    task_name: "sentiment"

@@ -1,5 +1,6 @@
 import os
 import importlib
+import glob
 import logging
 from tqdm import tqdm
 import torch
@@ -22,7 +23,7 @@ from extractors import (
     GrammarMetric
 )
 from augmenter import Augmenter
-from utils import policy_heatmap
+from utils import policy_heatmap, implement_policy_probabilities
 
 def load_class(module_class_str):
     parts = module_class_str.split(".")
@@ -37,30 +38,24 @@ torch.use_deterministic_algorithms(False)
 @hydra.main(version_base=None, config_path="conf", config_name="config")
 def fada_search(cfg: DictConfig) -> None:
 
-    # setup working directories
     log.info("Setting up working directories.")
     os.makedirs(cfg.working_dir, exist_ok=True)
     os.makedirs(cfg.dataset_dir, exist_ok=True)
     os.makedirs(cfg.tfim_dir, exist_ok=True)
 
-    # # initialize transforms
     log.info("Loading & initializing transforms.")
     transforms = [load_class(t) for t in cfg.transforms]
     transforms = sorted(transforms, key=lambda t: t.__name__)
     transforms = [Transform(t, task_name=cfg.dataset.task_name) for t in transforms]
-    print(transforms)
 
-    # initialize metric extractors
     log.info("Initializing metric extractors.")
+    feature_extractor = AMRFeatureExtractor()
     a_metric = AlignmentMetric()
     f_metric = FluencyMetric()
     g_metric = GrammarMetric()
 
-    # load dataset + annotations
     log.info("Loading dataset...")
     annotated_dataset = f"{cfg.dataset_dir}{cfg.dataset.builder_name}.{cfg.dataset.config_name}.annotated"
-
-    # initialize dataset 
     if os.path.exists(annotated_dataset):
         log.info(f"Found existing feature annotated dataset @ {annotated_dataset}!")
         dataset = load_from_disk(annotated_dataset)
@@ -68,7 +63,6 @@ def fada_search(cfg: DictConfig) -> None:
     else:
         log.info(f"Could not find existing dataset with feature annotations, generating one and saving @ {annotated_dataset}!")
         log.info("This may take a while...")
-        feature_extractor = AMRFeatureExtractor()
         dataset = load_dataset(cfg.dataset.builder_name, 
                                cfg.dataset.config_name, 
                                split="train")
@@ -79,7 +73,6 @@ def fada_search(cfg: DictConfig) -> None:
         dataset.save_to_disk(annotated_dataset)
     print(dataset)
 
-    # initialize fadata arrays
     log.info("Beginning FADA search procedure...")
     num_transforms   = len(cfg.transforms)
     num_features     = len(cfg.features)
@@ -119,9 +112,9 @@ def fada_search(cfg: DictConfig) -> None:
             augmenter = Augmenter(dataset=f_dataset, 
                         transforms=transforms,  
                         transform_probabilities=transform_probabilities,
-                        num_augmentations_per_record=cfg.fada.num_augmentations_per_record,
-                        num_transforms_to_apply=cfg.fada.num_transforms_to_apply,
-                        batch_size=cfg.fada.batch_size, 
+                        num_augmentations_per_record=cfg.augment.num_augmentations_per_record,
+                        num_transforms_to_apply=cfg.augment.num_transforms_to_apply,
+                        batch_size=cfg.augment.batch_size, 
                         keep_originals=False)
             aug_dataset = augmenter.augment()
 
@@ -164,5 +157,114 @@ def fada_search(cfg: DictConfig) -> None:
     
     log.info(f"FADA policy generation for {cfg.dataset.builder_name}.{cfg.dataset.config_name} complete!")
 
+
+@hydra.main(version_base=None, config_path="conf", config_name="config")
+def fada_augment(cfg: DictConfig) -> None:
+
+    log.info("Setting up working directories.")
+    os.makedirs(cfg.working_dir, exist_ok=True)
+    os.makedirs(cfg.dataset_dir, exist_ok=True)
+    os.makedirs(cfg.tfim_dir, exist_ok=True)
+
+    log.info("Loading & initializing transforms.")
+    transforms = [load_class(t) for t in cfg.transforms]
+    transforms = sorted(transforms, key=lambda t: t.__name__)
+    transforms = [Transform(t, task_name=cfg.dataset.task_name) for t in transforms]
+    
+    log.info("Loading dataset...")
+    annotated_dataset = f"{cfg.dataset_dir}{cfg.dataset.builder_name}.{cfg.dataset.config_name}.annotated"
+    if os.path.exists(annotated_dataset):
+        dataset = load_from_disk(annotated_dataset)
+        features = np.array(dataset["features"])
+        keep_cols = ['text', 'label', 'idx']
+        dataset = dataset.remove_columns([c for c in dataset.features.keys() if c not in keep_cols])
+    
+    log.info(f"Beginning augmentation for technique={cfg.augment.technique}")
+
+    if "uniform" in cfg.augment.technique:
+        save_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.{cfg.augment.technique}"
+        save_path = os.path.join(cfg.dataset_dir, save_name)
+        augmenter = Augmenter(dataset=dataset, 
+                    transforms=transforms,  
+                    transform_probabilities=None,
+                    num_augmentations_per_record=cfg.augment.num_augmentations_per_record,
+                    num_transforms_to_apply=cfg.augment.num_transforms_to_apply,
+                    batch_size=cfg.augment.batch_size, 
+                    keep_originals=cfg.augment.keep_originals)
+        aug_dataset = augmenter.augment()
+        aug_dataset.save_to_disk(save_path)
+        torch.cuda.empty_cache()
+        log.info(f"{cfg.augment.technique} augmented dataset saved @ {save_path}!")
+        
+    if "fada" in cfg.augment.technique:
+
+        log.info("Loading final TFIM component matrices.")
+        matrix_paths = glob.glob(os.path.join(cfg.tfim_dir, f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}*"))
+        max_id = int(max([m.split("-")[-1].split(".")[0] for m in matrix_paths]))
+
+        save_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.fada"
+        counts    = np.load(os.path.join(cfg.tfim_dir, f"{save_name}.v3.2.counts-step-{max_id}.npy"))
+        changes   = np.load(os.path.join(cfg.tfim_dir, f"{save_name}.v3.2.changes-step-{max_id}.npy"))
+        alignment = np.load(os.path.join(cfg.tfim_dir, f"{save_name}.v3.2.alignment-step-{max_id}.npy"))
+        fluency   = np.load(os.path.join(cfg.tfim_dir, f"{save_name}.v3.2.fluency-step-{max_id}.npy"))
+        grammar   = np.load(os.path.join(cfg.tfim_dir, f"{save_name}.v3.2.grammar-step-{max_id}.npy"))
+        tfim      = np.load(os.path.join(cfg.tfim_dir, f"{save_name}.v3.2.tfim-step-{max_id}.npy"))
+
+        if "fada-sweep" in cfg.augment.technique:
+
+            log.info("Generating new TFIMs representing different linear combinations of alignment, fluency, and grammaticality.")
+            for c_a in np.linspace(0.1, 1, 10):
+                c_f = c_g = (1 - c_a) / 2
+                c_a, c_f, c_g = round(c_a, 2), round(c_f, 2), round(c_g, 2)
+                log.info(f"c_a: {c_a}, c_f: {c_f}, c_g: {c_g}")
+                
+                aggregated_performance = (c_a * alignment) + \
+                                        (c_f * fluency) + \
+                                        (c_g * grammar)
+                applicability_rate = np.nan_to_num(changes / counts, 0)
+                tfim = softmax(applicability_rate * aggregated_performance, axis=0)
+
+                policy_probabilities = implement_policy_probabilities(tfim, features)
+
+                save_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.{cfg.augment.technique}.a.{c_a}.f.{c_f}.g.{c_g}"
+                save_path = os.path.join(cfg.dataset_dir, save_name)
+                augmenter = Augmenter(dataset=dataset, 
+                            transforms=transforms,  
+                            transform_probabilities=policy_probabilities,
+                            num_augmentations_per_record=cfg.augment.num_augmentations_per_record,
+                            num_transforms_to_apply=cfg.augment.num_transforms_to_apply,
+                            batch_size=cfg.augment.batch_size, 
+                            keep_originals=cfg.augment.keep_originals)
+                aug_dataset = augmenter.augment()
+                aug_dataset.save_to_disk(save_path)
+                torch.cuda.empty_cache()
+                log.info(f"{cfg.augment.technique} augmented dataset saved @ {save_path}!")
+
+        else:
+
+            aggregated_performance = (cfg.fada.c_a * alignment) + \
+                                     (cfg.fada.c_f * fluency) + \
+                                     (cfg.fada.c_g * grammar)
+            applicability_rate = np.nan_to_num(changes / counts, 0)
+            tfim = softmax(applicability_rate * aggregated_performance, axis=0)
+
+            policy_probabilities = implement_policy_probabilities(tfim, features)
+
+            save_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.{cfg.augment.technique}.a.{cfg.fada.c_a}.f.{cfg.fada.c_f}.g.{cfg.fada.c_g}"
+            save_path = os.path.join(cfg.dataset_dir, save_name)
+            augmenter = Augmenter(dataset=dataset, 
+                        transforms=transforms,  
+                        transform_probabilities=policy_probabilities,
+                        num_augmentations_per_record=cfg.augment.num_augmentations_per_record,
+                        num_transforms_to_apply=cfg.augment.num_transforms_to_apply,
+                        batch_size=cfg.augment.batch_size, 
+                        keep_originals=cfg.augment.keep_originals)
+            aug_dataset = augmenter.augment()
+            aug_dataset.save_to_disk(save_path)
+            torch.cuda.empty_cache()
+    
+    log.info(f"{cfg.augment.technique} augmented dataset saved @ {save_path}!")
+
 if __name__ == "__main__":
-    fada_search()
+    # fada_search()
+    fada_augment()
