@@ -38,10 +38,24 @@ torch.use_deterministic_algorithms(False)
 @hydra.main(version_base=None, config_path="conf", config_name="config")
 def fada_search(cfg: DictConfig) -> None:
 
+    log.info("Starting fada_search.")
+
     log.info("Setting up working directories.")
     os.makedirs(cfg.working_dir, exist_ok=True)
     os.makedirs(cfg.dataset_dir, exist_ok=True)
     os.makedirs(cfg.tfim_dir, exist_ok=True)
+
+    log.info("Checking to see if fada_search has been run for this dataset before...")
+    matrix_paths = glob.glob(os.path.join(cfg.tfim_dir, f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}*"))
+    if len(matrix_paths) > 0:
+        log.info("Found existing TFIM metadata!")
+        if not cfg.fada.force:
+            log.info("fada.force=False. Using existing TFIM metadata.")
+            return
+        else:
+            log.info("fada.force=True. Continuing with new fada_search. This will override existing metadata.")
+    else:
+        log.info("No existing fada search results found. Continuing with fada_search.")
 
     log.info("Loading & initializing transforms.")
     transforms = [load_class(t) for t in cfg.transforms]
@@ -161,10 +175,24 @@ def fada_search(cfg: DictConfig) -> None:
 @hydra.main(version_base=None, config_path="conf", config_name="config")
 def fada_augment(cfg: DictConfig) -> None:
 
+    log.info("Starting fada_augment.")
+
     log.info("Setting up working directories.")
     os.makedirs(cfg.working_dir, exist_ok=True)
     os.makedirs(cfg.dataset_dir, exist_ok=True)
     os.makedirs(cfg.tfim_dir, exist_ok=True)
+
+    log.info("Checking to see if fada_augment has been run for this dataset before...")
+    matrix_paths = glob.glob(os.path.join(cfg.dataset_dir, f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.{cfg.augment.technique}*"))
+    if len(matrix_paths) > 0:
+        log.info("Found existing augmented dataset!")
+        if not cfg.augment.force:
+            log.info("augment.force=False. Skipping augmentation...")
+            return
+        else:
+            log.info("augment.force=True. Continuing with new augmentation. This will override the existing dataset(s).")
+    else:
+        log.info("No existing dataset(s) found. Continuing with fada_augment.")
 
     log.info("Loading & initializing transforms.")
     transforms = [load_class(t) for t in cfg.transforms]
@@ -266,5 +294,5 @@ def fada_augment(cfg: DictConfig) -> None:
     log.info(f"{cfg.augment.technique} augmented dataset saved @ {save_path}!")
 
 if __name__ == "__main__":
-    # fada_search()
+    fada_search()
     fada_augment()

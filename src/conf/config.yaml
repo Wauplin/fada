@@ -20,6 +20,7 @@ fada:
     c_a: 0.8
     c_f: 0.1
     c_g: 0.1
+    force: False
 
 augment:
     technique: "uniform" # uniform, fada, fada-sweep
@@ -27,4 +28,4 @@ augment:
     num_augmentations_per_record: 1
     batch_size: 8
     keep_originals: True
-    force: True
+    force: False
