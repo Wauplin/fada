@@ -60,7 +60,9 @@ def fada_search(cfg: DictConfig) -> None:
     transforms = [Transform(t, task_name=cfg.dataset.task_name) for t in transforms]
 
     log.info("Initializing metric extractors.")
-    feature_extractor = AMRFeatureExtractor()
+    feature_extractor = AMRFeatureExtractor(
+        max_sent_len=cfg.amr_extractor.max_sent_len, 
+        batch_size=cfg.amr_extractor.batch_size)
     a_metric = AlignmentMetric()
     f_metric = FluencyMetric()
     g_metric = GrammarMetric()

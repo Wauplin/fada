@@ -7,6 +7,10 @@ working_dir: "./fadata/"
 dataset_dir: "./fadata/datasets/"
 tfim_dir: "./fadata/tfim/"
 
+amr_extractor:
+    max_sent_len: 64
+    batch_size: 8
+
 dataset:
     builder_name: "glue"
     config_name: "sst2"

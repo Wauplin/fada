@@ -57,7 +57,7 @@ class AMRFeatureExtractor:
         `pip install amrlib`
     """
     
-    def __init__(self):
+    def __init__(self, max_sent_len=128, batch_size=4):
         self.featurizers = featurizers = [    
             self.contains_accompanier,
             self.contains_age,
@@ -104,12 +104,16 @@ class AMRFeatureExtractor:
             self.contains_topic,
             self.contains_unit
         ]
-        self.featurizers = sorted(featurizers, key=lambda f: f.__name__)
-        self.device      = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        self.amr_model   = None
+        self.featurizers  = sorted(featurizers, key=lambda f: f.__name__)
+        self.max_sent_len = max_sent_len
+        self.batch_size   = batch_size
+        self.device       = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.amr_model    = None
         
-    def load_amr_model(self, max_sent_len=256):
-        self.amr_model = amrlib.load_stog_model(max_sent_len=max_sent_len, batch_size=2, device=self.device)
+    def load_amr_model(self):
+        self.amr_model = amrlib.load_stog_model(max_sent_len=self.max_sent_len, 
+                                                batch_size=self.batch_size, 
+                                                device=self.device)
         
     def text_to_amr(self, texts):
         if self.amr_model is None:
