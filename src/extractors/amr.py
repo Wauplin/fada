@@ -1,6 +1,7 @@
 import penman
 import amrlib
 import numpy as np
+import torch
 
 class AMRGraph:
     """
@@ -104,10 +105,11 @@ class AMRFeatureExtractor:
             self.contains_unit
         ]
         self.featurizers = sorted(featurizers, key=lambda f: f.__name__)
+        self.device      = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.amr_model   = None
         
     def load_amr_model(self, max_sent_len=128):
-        self.amr_model = amrlib.load_stog_model(max_sent_len=max_sent_len, batch_size=4)
+        self.amr_model = amrlib.load_stog_model(max_sent_len=max_sent_len, batch_size=4, device=self.device)
         
     def text_to_amr(self, texts):
         if self.amr_model is None:
