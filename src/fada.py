@@ -20,6 +20,7 @@ from extractors import (
 )
 from augmenter import Augmenter
 from utils import policy_heatmap, implement_policy_probabilities
+from filters import balance_dataset
 
 def load_class(module_class_str):
     parts = module_class_str.split(".")
@@ -78,6 +79,18 @@ def fada_search(cfg: DictConfig) -> None:
                                split="train")
         if cfg.dataset.text_key != "text":
             dataset = dataset.rename_column(cfg.dataset.text_key, "text")
+
+        if dataset.num_rows > cfg.dataset.max_size:
+            log.info(f"Dataset size is larger than dataset.max_size={cfg.dataset.max_size}")
+            if str(cfg.dataset.num_per_class) == "infer":
+                num_labels = len(dataset.features['label'].names)
+                num_per_class = int(cfg.dataset.max_size / num_labels)
+            else:
+                num_per_class = cfg.dataset.num_per_class
+            log.info(f"Balancing dataset with num_per_class={num_per_class}")
+            dataset = balance_dataset(dataset, num_per_class=num_per_class)
+            log.info(dataset)
+
         features = feature_extractor(dataset["text"])
         dataset = dataset.add_column("features", [f for f in features])
         dataset.save_to_disk(annotated_dataset)

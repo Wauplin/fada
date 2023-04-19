@@ -36,7 +36,9 @@ def balance_dataset(dataset, num_per_class=100):
             idx_to_keep = random.sample(range(num_instances_in_class), num_per_class)
             class_partition = class_partition.select(idx_to_keep).shuffle()
         filtered_partitions.append(class_partition)
-    return concatenate_datasets(filtered_partitions)
+    out_dataset = concatenate_datasets(filtered_partitions)
+    out_dataset = out_dataset.shuffle()
+    return out_dataset
 
 def vectorize(output):
     sorted_output = sorted(output, key=lambda d: d['label']) 
