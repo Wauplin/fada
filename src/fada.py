@@ -162,7 +162,7 @@ def fada_search(cfg: DictConfig) -> None:
         if i > cfg.fada.max_iterations:
             break
     
-    log.info(f"FADA policy generation complete!")
+    log.info(f"FADA policy generation for {cfg.dataset.builder_name}.{cfg.dataset.config_name} complete!")
 
 if __name__ == "__main__":
     fada_search()
