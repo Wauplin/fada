@@ -33,13 +33,13 @@ class Transform:
         
         # setting class attributes
         if 'to_tense' in inspect.signature(self.transform_class).parameters:
-            print("initializing class with to_tense='past'") # future & random don't work
+            print(f"initializing {self.transform_class.__name__}(to_tense='past')") # future & random don't work
             self.transform_instance = self.transform_class(to_tense="past")
         elif 'source_lang' in inspect.signature(self.transform_class).parameters:
-            print("initializing class with source_lang='es'") 
+            print(f"initializing {self.transform_class.__name__}(source_lang='es')") 
             self.transform_instance = self.transform_class(source_lang="es")
         elif 'task_name' in inspect.signature(self.transform_class).parameters:
-            print(f"initializing class with task_name='{task_name}', return_metadata=True") 
+            print(f"initializing {self.transform_class.__name__}(task_name='{task_name}', return_metadata=True)") 
             self.transform_instance = self.transform_class(task_name=self.task_name, return_metadata=True)
         # elif isinstance(self.transform_class, LostInTranslation):
         #     self.transform_instance = self.transform_class(device=0)
