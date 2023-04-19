@@ -9,10 +9,6 @@ from scipy.special import softmax
 import hydra
 from omegaconf import DictConfig
 
-import transformers
-transformers.utils.logging.disable_progress_bar() 
-transformers.utils.logging.set_verbosity_error()
-
 from datasets import load_dataset, load_from_disk
 
 from transform import Transform

@@ -1,5 +1,6 @@
 import evaluate
 import numpy as np
+import transformers
 
 
 class FluencyMetric:
@@ -18,6 +19,14 @@ class FluencyMetric:
         self.model_id = model_id
         self.metric = evaluate.load("perplexity", module_type="metric")
         self.save_name = "fluency_score"
+
+    def disable_progress_bars(self):
+        evaluate.utils.logging.disable_progress_bar() 
+        transformers.utils.logging.disable_progress_bar() 
+
+    def enable_progress_bars(self):
+        evaluate.utils.logging.enable_progress_bar() 
+        transformers.utils.logging.enable_progress_bar() 
     
     def evaluate(self, dataset, annotate_dataset=False):
         scores = self.metric.compute(
@@ -34,6 +43,7 @@ class FluencyMetric:
         Higher is better. Anything lower than 1 means that the
         changes made to the text reduced fluency. 
         """
+        self.disable_progress_bars()
         before_dataset, before_scores = self.evaluate(before_dataset)
         after_dataset, after_scores   = self.evaluate(after_dataset)
         scores = np.nan_to_num(before_scores / after_scores)
@@ -41,9 +51,9 @@ class FluencyMetric:
             if self.save_name in after_dataset.features:
                 after_dataset = after_dataset.remove_columns([self.save_name])
             after_dataset = after_dataset.add_column(self.save_name, [s for s in scores])
+        self.enable_progress_bar()
         return after_dataset, scores
     
-
     
 
 if __name__ == '__main__':
