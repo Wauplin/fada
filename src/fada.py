@@ -2,10 +2,15 @@ import os
 import importlib
 import logging
 from tqdm import tqdm
+import torch
 import numpy as np
 from scipy.special import softmax
 import hydra
 from omegaconf import DictConfig
+
+import transformers
+transformers.utils.logging.disable_progress_bar() 
+transformers.utils.logging.set_verbosity_error()
 
 from datasets import load_dataset, load_from_disk
 
@@ -27,6 +32,7 @@ def load_class(module_class_str):
     return cls
 
 log = logging.getLogger(__name__)
+torch.use_deterministic_algorithms(False)
 
 @hydra.main(version_base=None, config_path="conf", config_name="config")
 def fada_search(cfg: DictConfig) -> None:

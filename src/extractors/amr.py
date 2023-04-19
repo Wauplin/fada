@@ -107,12 +107,12 @@ class AMRFeatureExtractor:
         self.amr_model   = None
         
     def load_amr_model(self, max_sent_len=128):
-        self.amr_model = amrlib.load_stog_model(max_sent_len=max_sent_len)
+        self.amr_model = amrlib.load_stog_model(max_sent_len=max_sent_len, batch_size=4)
         
     def text_to_amr(self, texts):
         if self.amr_model is None:
             self.load_amr_model()
-        amr_penmans = self.amr_model.parse_sents(texts, add_metadata=False, disable_progress=True)
+        amr_penmans = self.amr_model.parse_sents(texts, add_metadata=False) # disable_progress=True
         amr_graphs = []
         for p in amr_penmans:
             try:
