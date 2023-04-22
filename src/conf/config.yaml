@@ -4,6 +4,7 @@ defaults:
     - features: amr
 
 working_dir: "./fadata/"
+amr_dir: "./fadata/amrs/"
 dataset_dir: "./fadata/datasets/"
 tfim_dir: "./fadata/tfim/"
 

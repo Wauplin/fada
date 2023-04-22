@@ -1,7 +1,9 @@
+import os
 import penman
 import amrlib
 import numpy as np
 import torch
+import pickle
 
 class AMRGraph:
     """
@@ -14,6 +16,8 @@ class AMRGraph:
         The amr string or graph to be parsed.
     """
     def __init__(self, amr):
+        if amr is None:
+            amr = "(a / amr-empty)"
         self.graph = penman.decode(amr) if not isinstance(amr, penman.graph.Graph) else amr
         self.amr_text = penman.encode(self.graph)
 
@@ -57,7 +61,7 @@ class AMRFeatureExtractor:
         `pip install amrlib`
     """
     
-    def __init__(self, max_sent_len=128, batch_size=4):
+    def __init__(self, max_sent_len=128, batch_size=4, amr_save_path="./amrs", force=False):
         self.featurizers = featurizers = [    
             self.contains_accompanier,
             self.contains_age,
@@ -104,23 +108,39 @@ class AMRFeatureExtractor:
             self.contains_topic,
             self.contains_unit
         ]
-        self.featurizers  = sorted(featurizers, key=lambda f: f.__name__)
-        self.max_sent_len = max_sent_len
-        self.batch_size   = batch_size
-        self.device       = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        self.amr_model    = None
+        self.featurizers   = sorted(featurizers, key=lambda f: f.__name__)
+        self.max_sent_len  = max_sent_len
+        self.batch_size    = batch_size
+        self.device        = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.amr_model     = None
+        self.amr_save_path = amr_save_path
+        self.force         = force
         
     def load_amr_model(self):
         self.amr_model = amrlib.load_stog_model(max_sent_len=self.max_sent_len, 
                                                 batch_size=self.batch_size, 
                                                 device=self.device)
         
-    def text_to_amr(self, texts):
-        if self.amr_model is None:
-            self.load_amr_model()
-        amr_penmans = self.amr_model.parse_sents(texts, add_metadata=False, disable_progress=False)
+    def extract_amrs(self, texts):
+        if os.path.exists(self.amr_save_path) and not self.force:
+            print(f"loading existing amrs @ {self.amr_save_path}")
+            with open (self.amr_save_path, 'rb') as fp:
+                amr_penmans = pickle.load(fp)
+        else:
+            if self.amr_model is None:
+                self.load_amr_model()
+            amr_penmans = self.amr_model.parse_sents(texts, add_metadata=False, disable_progress=False)
+            try:
+                print(f"saving amrs @ {self.amr_save_path}")
+                with open(self.amr_save_path, 'wb') as fp:
+                    pickle.dump(amr_penmans, fp)
+            except:
+                print(f"failed to save extracted amrs @ {self.amr_save_path}... continuing on...")
+        return amr_penmans
+            
+    def amr_to_graph(self, amrs):
         amr_graphs = []
-        for p in amr_penmans:
+        for p in amrs:
             try:
                 amr_graphs.append(AMRGraph(p))
             except Exception as e: 
@@ -140,7 +160,8 @@ class AMRFeatureExtractor:
         return feature_matrix
     
     def __call__(self, texts):
-        graphs = self.text_to_amr(texts)
+        amrs = self.extract_amrs(texts)
+        graphs = self.amr_to_graph(amrs)
         return self.generate_feature_matrix(graphs)
 
     # attributes =============================================================
