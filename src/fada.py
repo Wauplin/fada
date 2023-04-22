@@ -62,7 +62,7 @@ def fada_search(cfg: DictConfig) -> None:
 
     log.info("Initializing metric extractors.")
     feature_extractor = AMRFeatureExtractor(
-        amr_save_path=os.path.join(cfg.amr_dir, f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}"),
+        amr_save_path=os.path.join(cfg.amr_dir, f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.pkl"),
         max_sent_len=cfg.amr_extractor.max_sent_len, 
         batch_size=cfg.amr_extractor.batch_size)
     a_metric = AlignmentMetric()

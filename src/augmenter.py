@@ -65,7 +65,8 @@ class Augmenter:
         self.perf_extractor = perf_extractor
         
         # initializations
-        self.dataset = dataset.remove_columns("idx")
+        if "idx" in self.dataset.column_names:
+            self.dataset = dataset.remove_columns("idx")
         self.add_idx_to_dataset()
         self.num_transforms_available = len(self.transforms)
         
@@ -83,7 +84,7 @@ class Augmenter:
             self.transform_probabilities = given_policy
         
     def add_idx_to_dataset(self):
-        if 'idx' not in self.dataset.features:
+        if 'idx' not in self.dataset.column_names:
             self.dataset = self.dataset.add_column("idx", range(len(self.dataset)))
         
     def apply_to_batch(self, batch):
