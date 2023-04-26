@@ -25,7 +25,7 @@ class AlignmentMetric:
         self.device = 0 if torch.cuda.is_available() else -1
         self.pipe = None
         self.save_name = "alignment_score"
-        
+
         # initializations
         self.find_model_for_dataset()
 
@@ -51,6 +51,9 @@ class AlignmentMetric:
         self.pipe = pipeline("text-classification", 
                             model=model_id, 
                             device=self.device, 
+                            max_length=512,
+                            padding='max_length',
+                            truncation=True,
                             top_k=None)
 
     def extract_prediction_probabilities(self, dataset):
