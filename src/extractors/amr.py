@@ -146,7 +146,7 @@ class AMRFeatureExtractor:
             except Exception as e: 
                 print(e)
                 print(p)
-                amr_graphs.append(AMRGraph(p))
+                amr_graphs.append(AMRGraph(None))
         return amr_graphs
     
     def generate_feature_matrix(self, graphs):
