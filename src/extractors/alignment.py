@@ -17,19 +17,28 @@ class AlignmentMetric:
     :Package Requirements:
         * pip install cleanlab
     """
-    def __init__(self):
+    def __init__(self, builder_name, config_name):
+        self.builder_name = builder_name
+        self.config_name = config_name
         self.api = HfApi()
         self.device = 0 if torch.cuda.is_available() else -1
         self.pipe = None
         self.save_name = "alignment_score"
+        
+        # initializations
+        self.find_model_for_dataset()
 
-    def find_model_for_dataset(self, dataset_name):
+    def find_model_for_dataset(self):
+        if self.config_name in ["default", "plain_text"]:
+            search_name = self.builder_name
+        else:
+            search_name = self.config_name
         
         model_filter = ModelFilter(
             task="text-classification",
             library="pytorch",
             # model_name=dataset_name,
-            trained_dataset=dataset_name)
+            trained_dataset=search_name)
 
         model_id = next(iter(self.api.list_models(filter=model_filter)))
 
@@ -42,12 +51,6 @@ class AlignmentMetric:
                                  top_k=None)
 
     def extract_prediction_probabilities(self, dataset):
-        if self.pipe is None:
-            if dataset.config_name in ["default", "plain_text"]:
-                search_name = dataset.builder_name
-            else:
-                search_name = dataset.config_name
-            self.find_model_for_dataset(search_name)
         output = self.pipe(dataset['text'])
         return np.stack([vectorize(o) for o in output])
 
