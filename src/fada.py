@@ -67,7 +67,7 @@ def fada_search(cfg: DictConfig) -> None:
         batch_size=cfg.amr_extractor.batch_size)
     a_metric = AlignmentMetric(
         builder_name=cfg.dataset.builder_name, 
-        config_name=cfg.dataset.config_name
+        config_name=cfg.dataset.config_name,
         model_id=cfg.alignment_extractor.model_id)
     f_metric = FluencyMetric()
     g_metric = GrammarMetric()

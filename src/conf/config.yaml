@@ -12,7 +12,7 @@ amr_extractor:
     max_sent_len: 64
     batch_size: 8
 
-alignmen_extractor:
+alignment_extractor:
     model_id: "distilbert-base-uncased-finetuned-sst-2-english"
 
 dataset:

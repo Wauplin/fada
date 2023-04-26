@@ -43,16 +43,15 @@ class AlignmentMetric:
                 trained_dataset=search_name)
 
             model_id = next(iter(self.api.list_models(filter=model_filter)))
+            model_id = getattr(model_id, 'modelId')
         else:
             model_id = self.model_id
 
-        if model_id:
-            model_id = getattr(model_id, 'modelId')
-            print('Using ' + model_id + ' to support cleanlab datalabel issues.')
-            self.pipe = pipeline("text-classification", 
-                                 model=model_id, 
-                                 device=self.device, 
-                                 top_k=None)
+        print('Using ' + model_id + ' to support cleanlab datalabel issues.')
+        self.pipe = pipeline("text-classification", 
+                            model=model_id, 
+                            device=self.device, 
+                            top_k=None)
 
     def extract_prediction_probabilities(self, dataset):
         output = self.pipe(dataset['text'])

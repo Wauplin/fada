@@ -1,6 +1,6 @@
 python fada.py dataset.builder_name=glue dataset.config_name=sst2 dataset.text_key=sentence dataset.task_name=sentiment amr_extractor.max_sent_len=64 amr_extractor.batch_size=8
 python fada.py dataset.builder_name=imdb dataset.config_name=plain_text dataset.text_key=text dataset.task_name=sentiment amr_extractor.max_sent_len=512 amr_extractor.batch_size=1
-python fada.py dataset.builder_name=ag_news dataset.config_name=default dataset.text_key=text dataset.task_name=topic amr_extractor.max_sent_len=64 amr_extractor.batch_size=8
+python fada.py dataset.builder_name=ag_news dataset.config_name=default dataset.text_key=text dataset.task_name=topic amr_extractor.max_sent_len=64 amr_extractor.batch_size=8 alignment_extractor.model_id=textattack/bert-base-uncased-ag-news
 
 dataset:
     builder_name: "glue"
