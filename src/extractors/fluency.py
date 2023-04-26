@@ -51,7 +51,7 @@ class FluencyMetric:
             if self.save_name in after_dataset.features:
                 after_dataset = after_dataset.remove_columns([self.save_name])
             after_dataset = after_dataset.add_column(self.save_name, [s for s in scores])
-        self.enable_progress_bar()
+        self.enable_progress_bars()
         return after_dataset, scores
     
     
