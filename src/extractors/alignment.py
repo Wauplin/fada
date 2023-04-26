@@ -17,9 +17,10 @@ class AlignmentMetric:
     :Package Requirements:
         * pip install cleanlab
     """
-    def __init__(self, builder_name, config_name):
+    def __init__(self, builder_name, config_name, model_id=None):
         self.builder_name = builder_name
         self.config_name = config_name
+        self.model_id = model_id
         self.api = HfApi()
         self.device = 0 if torch.cuda.is_available() else -1
         self.pipe = None
@@ -29,18 +30,21 @@ class AlignmentMetric:
         self.find_model_for_dataset()
 
     def find_model_for_dataset(self):
-        if self.config_name in ["default", "plain_text"]:
-            search_name = self.builder_name
-        else:
-            search_name = self.config_name
-        
-        model_filter = ModelFilter(
-            task="text-classification",
-            library="pytorch",
-            # model_name=dataset_name,
-            trained_dataset=search_name)
+        if not self.model_id:
+            if self.config_name in ["default", "plain_text"]:
+                search_name = self.builder_name
+            else:
+                search_name = self.config_name
+            
+            model_filter = ModelFilter(
+                task="text-classification",
+                library="pytorch",
+                # model_name=dataset_name,
+                trained_dataset=search_name)
 
-        model_id = next(iter(self.api.list_models(filter=model_filter)))
+            model_id = next(iter(self.api.list_models(filter=model_filter)))
+        else:
+            model_id = self.model_id
 
         if model_id:
             model_id = getattr(model_id, 'modelId')
