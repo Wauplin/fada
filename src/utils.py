@@ -69,7 +69,7 @@ def policy_heatmap(policy, transforms, featurizers):
     df.columns = f_names
     df.index = t_names
     sns.heatmap(df)
-    plt.show()
+    plt.show(block=False)
     
 def implement_policy_probabilities(policy, features):
     default_probability = policy.mean(axis=1)
