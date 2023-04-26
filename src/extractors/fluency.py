@@ -31,7 +31,8 @@ class FluencyMetric:
     def evaluate(self, dataset, annotate_dataset=False):
         scores = self.metric.compute(
             predictions=dataset['text'], 
-            model_id=self.model_id)['perplexities']
+            model_id=self.model_id,
+            max_length=512)['perplexities']
         if annotate_dataset:
             if self.save_name in dataset.features:
                 dataset = dataset.remove_columns([self.save_name])
