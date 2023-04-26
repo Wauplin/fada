@@ -65,7 +65,7 @@ def fada_search(cfg: DictConfig) -> None:
         amr_save_path=os.path.join(cfg.amr_dir, f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.pkl"),
         max_sent_len=cfg.amr_extractor.max_sent_len, 
         batch_size=cfg.amr_extractor.batch_size)
-    a_metric = AlignmentMetric(cfg.builder_name, cfg.config_name)
+    a_metric = AlignmentMetric(cfg.dataset.builder_name, cfg.dataset.config_name)
     f_metric = FluencyMetric()
     g_metric = GrammarMetric()
 
