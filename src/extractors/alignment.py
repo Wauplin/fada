@@ -43,7 +43,11 @@ class AlignmentMetric:
 
     def extract_prediction_probabilities(self, dataset):
         if self.pipe is None:
-            self.find_model_for_dataset(dataset.config_name)
+            if dataset.config_name in ["default", "plain_text"]:
+                search_name = dataset.builder_name
+            else:
+                search_name = dataset.config_name
+            self.find_model_for_dataset(search_name)
         output = self.pipe(dataset['text'])
         return np.stack([vectorize(o) for o in output])
 
