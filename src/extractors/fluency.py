@@ -43,7 +43,6 @@ class FluencyMetric:
         Higher is better. Anything lower than 1 means that the
         changes made to the text reduced fluency. 
         """
-        self.disable_progress_bars()
         before_dataset, before_scores = self.evaluate(before_dataset)
         after_dataset, after_scores   = self.evaluate(after_dataset)
         scores = np.nan_to_num(before_scores / after_scores)
@@ -51,7 +50,6 @@ class FluencyMetric:
             if self.save_name in after_dataset.features:
                 after_dataset = after_dataset.remove_columns([self.save_name])
             after_dataset = after_dataset.add_column(self.save_name, [s for s in scores])
-        self.enable_progress_bars()
         return after_dataset, scores
     
     
