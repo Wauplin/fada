@@ -30,44 +30,7 @@ os.environ["WANDB_DISABLED"] = "true"
 
 parser = argparse.ArgumentParser(description='FADA Trainer')
 
-parser.add_argument('--techniques', nargs='+', 
-                    default=[
-                        'adv_glue.adv_sst2.original.100',
-                        'adv_glue.adv_sst2.original.50',
-                        'adv_glue.adv_sst2.sibyl.uniform.100',
-                        'adv_glue.adv_sst2.sibyl.uniform.300',
-                        'adv_glue.adv_sst2.sibyl.uniform.550',
-                        'adv_glue.adv_sst2.sibyl.fada_v2_CleanLabSafe_avg.100',
-                        'adv_glue.adv_sst2.sibyl.fada_v2_CleanLabSafe_avg.300',
-                        'adv_glue.adv_sst2.sibyl.fada_v2_CleanLabSafe_avg.550',
-                        'adv_glue.adv_sst2.sibyl.fada_v2_CleanLabSafe_sum.100',
-                        'adv_glue.adv_sst2.sibyl.fada_v2_CleanLabSafe_sum.300',
-                        'adv_glue.adv_sst2.sibyl.fada_v2_CleanLabSafe_sum.550',
-                        'adv_glue.adv_sst2.sibyl.fada_v2_InverseLikelihood_avg.100',
-                        'adv_glue.adv_sst2.sibyl.fada_v2_InverseLikelihood_avg.300',
-                        'adv_glue.adv_sst2.sibyl.fada_v2_InverseLikelihood_avg.550',
-                        'adv_glue.adv_sst2.sibyl.fada_v2_InverseLikelihood_sum.100',
-                        'adv_glue.adv_sst2.sibyl.fada_v2_InverseLikelihood_sum.300',
-                        'adv_glue.adv_sst2.sibyl.fada_v2_InverseLikelihood_sum.550',
-                        'adv_glue.adv_sst2.sibyl.fada_v2_LikelihoodShiftNeg_avg.100',
-                        'adv_glue.adv_sst2.sibyl.fada_v2_LikelihoodShiftNeg_avg.300',
-                        'adv_glue.adv_sst2.sibyl.fada_v2_LikelihoodShiftNeg_avg.550',
-                        'adv_glue.adv_sst2.sibyl.fada_v2_LikelihoodShiftNeg_sum.100',
-                        'adv_glue.adv_sst2.sibyl.fada_v2_LikelihoodShiftNeg_sum.300',
-                        'adv_glue.adv_sst2.sibyl.fada_v2_LikelihoodShiftNeg_sum.550',
-                        'adv_glue.adv_sst2.sibyl.fada_v2_LikelihoodShiftPos_avg.100',
-                        'adv_glue.adv_sst2.sibyl.fada_v2_LikelihoodShiftPos_avg.300',
-                        'adv_glue.adv_sst2.sibyl.fada_v2_LikelihoodShiftPos_avg.550',
-                        'adv_glue.adv_sst2.sibyl.fada_v2_LikelihoodShiftPos_sum.100',
-                        'adv_glue.adv_sst2.sibyl.fada_v2_LikelihoodShiftPos_sum.300',
-                        'adv_glue.adv_sst2.sibyl.fada_v2_LikelihoodShiftPos_sum.550',
-                        'adv_glue.adv_sst2.sibyl.fada_v2_Likelihood_avg.100',
-                        'adv_glue.adv_sst2.sibyl.fada_v2_Likelihood_avg.300',
-                        'adv_glue.adv_sst2.sibyl.fada_v2_Likelihood_avg.550',
-                        'adv_glue.adv_sst2.sibyl.fada_v2_Likelihood_sum.100',
-                        'adv_glue.adv_sst2.sibyl.fada_v2_Likelihood_sum.300',
-                        'adv_glue.adv_sst2.sibyl.fada_v2_Likelihood_sum.550',
-                    ],
+parser.add_argument('--techniques', nargs='+', default=[],
                     type=str, help='technique used to generate augmented data')
 parser.add_argument('--dataset-config', nargs='+', default=['glue', 'sst2'],
                     type=str, help='dataset info needed for load_dataset.')
@@ -75,7 +38,7 @@ parser.add_argument('--dataset-keys', nargs='+', default=['text'],
                     type=str, help='dataset info needed for load_dataset.')
 parser.add_argument('--models', nargs='+',  default=['prajjwal1/bert-tiny', 'bert-base-uncased'], 
                     type=str, help='pretrained huggingface models to train')
-parser.add_argument('--data-dir', type=str, default="./datasets/study/",
+parser.add_argument('--data-dir', type=str, default="../src/fadata/datasets/",
                     help='path to data folders')
 parser.add_argument('--save-dir', type=str, default="./pretrained/",
                     help='path to data folders')
