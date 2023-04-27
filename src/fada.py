@@ -247,12 +247,12 @@ def fada_augment(cfg: DictConfig) -> None:
         max_id = int(max([m.split("-")[-1].split(".")[0] for m in matrix_paths]))
 
         save_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.fada"
-        counts    = np.load(os.path.join(cfg.tfim_dir, f"{save_name}.v3.2.counts-step-{max_id}.npy"))
-        changes   = np.load(os.path.join(cfg.tfim_dir, f"{save_name}.v3.2.changes-step-{max_id}.npy"))
-        alignment = np.load(os.path.join(cfg.tfim_dir, f"{save_name}.v3.2.alignment-step-{max_id}.npy"))
-        fluency   = np.load(os.path.join(cfg.tfim_dir, f"{save_name}.v3.2.fluency-step-{max_id}.npy"))
-        grammar   = np.load(os.path.join(cfg.tfim_dir, f"{save_name}.v3.2.grammar-step-{max_id}.npy"))
-        tfim      = np.load(os.path.join(cfg.tfim_dir, f"{save_name}.v3.2.tfim-step-{max_id}.npy"))
+        counts    = np.load(os.path.join(cfg.tfim_dir, f"{save_name}.counts-step-{max_id}.npy"))
+        changes   = np.load(os.path.join(cfg.tfim_dir, f"{save_name}.changes-step-{max_id}.npy"))
+        alignment = np.load(os.path.join(cfg.tfim_dir, f"{save_name}.alignment-step-{max_id}.npy"))
+        fluency   = np.load(os.path.join(cfg.tfim_dir, f"{save_name}.fluency-step-{max_id}.npy"))
+        grammar   = np.load(os.path.join(cfg.tfim_dir, f"{save_name}.grammar-step-{max_id}.npy"))
+        tfim      = np.load(os.path.join(cfg.tfim_dir, f"{save_name}.tfim-step-{max_id}.npy"))
 
         if "fada-sweep" in cfg.augment.technique:
 
