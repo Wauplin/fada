@@ -124,9 +124,9 @@ def prepare_splits(dataset_dict, train_val_split = 0.9, val_test_split = 0.5):
         val_dataset   = val_test['train']
         test_dataset  = val_test['test']
 
-    dataset_dict[train_id] = train_dataset
-    dataset_dict[val_id]   = val_dataset
-    dataset_dict[test_id]  = test_dataset
+    dataset_dict["train"]      = train_dataset
+    dataset_dict["validation"] = val_dataset
+    dataset_dict["test"]       = test_dataset
 
     return dataset_dict
 
