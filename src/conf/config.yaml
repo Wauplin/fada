@@ -33,7 +33,7 @@ fada:
     force: False
 
 augment:
-    technique: "uniform" # uniform, fada, fada-sweep
+    technique: "fada-sweep" # uniform, fada, fada-sweep
     num_transforms_to_apply: 1
     num_augmentations_per_record: 1
     batch_size: 8
