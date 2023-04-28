@@ -179,7 +179,13 @@ class AMRFeatureExtractor:
     # roles ==================================================================
 
     def contains_coreferences(self, g): return any(r for r in g.amr_text.split() if r in ['i', 'you', 'he', 'she', 'it', 'we', 'they'])
-    def contains_number(self, g):       return any(a for a in g.graph.attributes() if a.target.isnumeric())
+    def contains_number(self, g):     
+        for a in g.graph.attributes():
+            if a.target is not None:
+                if a.target.isnumeric():
+                    return True
+        return False  
+        # return any(a for a in g.graph.attributes() if a.target.isnumeric())
 
     def contains_accompanier(self, g):  return g.contains_role(':accompanier')
     def contains_age(self, g):          return g.contains_role(':age')
@@ -201,7 +207,13 @@ class AMRFeatureExtractor:
     def contains_manner(self, g):       return g.contains_role(':manner')
     def contains_medium(self, g):       return g.contains_role(':medium')
     def contains_mod(self, g):          return g.contains_role(':mod')
-    def contains_mode(self, g):         return any(a for a in g.graph.attributes() if ":mode" in a.role)
+    def contains_mode(self, g):       
+        for a in g.graph.attributes():
+            if a.target is not None:
+                if ":mode" in a.role:
+                    return True
+        return False         
+        # return any(a for a in g.graph.attributes() if ":mode" in a.role)
     def contains_name(self, g):         return g.contains_role(':name')
     def contains_ord(self, g):          return g.contains_role(':ord')
     def contains_part(self, g):         return g.contains_role(':part')
