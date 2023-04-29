@@ -92,7 +92,7 @@ def transforms_to_ids(sampled_transforms, all_transforms):
 def prepare_splits(dataset_dict, train_val_split = 0.9, val_test_split = 0.5):
     has_train = has_val = has_test = False
     train_id, val_id, test_id = "train", "valid", "test"
-    for split_name in dataset_dict.keys():
+    for split_name in list(dataset_dict.keys()):
         if "train" in split_name:
             has_train = True
             train_id = split_name
