@@ -89,7 +89,7 @@ def transforms_to_ids(sampled_transforms, all_transforms):
     transforms_applied[transforms_ids] = 1
     return transforms_applied
 
-def prepare_splits(dataset_dict, train_val_split = 0.9, val_test_split = 0.5):
+def prepare_splits(dataset_dict, train_val_split = 0.9, val_test_split = 0.5, seed=10):
     has_train = has_val = has_test = False
     train_id, val_id, test_id = "train", "valid", "test"
     for split_name in list(dataset_dict.keys()):
@@ -108,18 +108,18 @@ def prepare_splits(dataset_dict, train_val_split = 0.9, val_test_split = 0.5):
     if has_train and has_val and has_test:
         return dataset_dict
     if has_val and not has_test:
-        val_test      = dataset_dict[val_id].train_test_split(train_size=val_test_split)
+        val_test      = dataset_dict[val_id].train_test_split(train_size=val_test_split, seed=seed)
         train_dataset = dataset_dict[train_id]
         val_dataset   = val_test['train']
         test_dataset  = val_test['test']
     if has_test and not has_val:
-        train_val     = dataset_dict[train_id].train_test_split(train_size=train_val_split)
+        train_val     = dataset_dict[train_id].train_test_split(train_size=train_val_split, seed=seed)
         train_dataset = train_val['train']
         val_dataset   = train_val['test']
         test_dataset  = dataset_dict[test_id]
     if not has_val and not has_test:
-        train_val     = dataset_dict[train_id].train_test_split(train_size=train_val_split)
-        val_test      = train_val['test'].train_test_split(train_size=val_test_split)
+        train_val     = dataset_dict[train_id].train_test_split(train_size=train_val_split, seed=seed)
+        val_test      = train_val['test'].train_test_split(train_size=val_test_split, seed=seed)
         train_dataset = train_val['train']
         val_dataset   = val_test['train']
         test_dataset  = val_test['test']
