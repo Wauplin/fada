@@ -58,7 +58,7 @@ parser.add_argument('--gpus', default='0,1,2,3', type=str,
                     help='id(s) for CUDA_VISIBLE_DEVICES')
 parser.add_argument('--num_runs', default=3, type=int, metavar='N',
                     help='number of times to repeat the training')
-parser.add_argument('--save-file', type=str, default='./results/da_study_results2.csv',
+parser.add_argument('--save-file', type=str, default='./results/imdb.plain_text.csv',
                     help='name for the csv file to save with results')
 
 args = parser.parse_args()
