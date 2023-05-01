@@ -134,6 +134,12 @@ def rename_text_columns(dataset_dict):
     text_columns = ["sentence"]
     val_columns = ["val", "valid"]
     for split_name, dataset in dataset_dict.items():
+        if dataset.builder_name == "yahoo_answers_topics":
+            dataset_dict[split_name] = dataset.map(
+                lambda example : {'text' : example['question_title'] + " " + 
+                                           example['question_content'] + " " +
+                                           example['best_answer'],
+                                 'label': example['topic']})  
         for column in dataset.features:
             if column in text_columns:
                 dataset_dict[split_name] = dataset.rename_column(column, "text")

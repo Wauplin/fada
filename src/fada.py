@@ -19,7 +19,12 @@ from extractors import (
     GrammarMetric
 )
 from augmenter import Augmenter
-from utils import policy_heatmap, implement_policy_probabilities
+from utils import (
+    policy_heatmap, 
+    implement_policy_probabilities,
+    prepare_splits,
+    rename_text_columns
+)
 from filters import balance_dataset
 
 def load_class(module_class_str):
@@ -82,8 +87,10 @@ def fada_search(cfg: DictConfig) -> None:
         log.info(f"Could not find existing dataset with feature annotations, generating one and saving @ {annotated_dataset}!")
         log.info("This may take a while...")
         dataset = load_dataset(cfg.dataset.builder_name, 
-                               cfg.dataset.config_name, 
-                               split="train")
+                               cfg.dataset.config_name)
+        raw_datasets = prepare_splits(raw_datasets)
+        raw_datasets = rename_text_columns(raw_datasets)
+        dataset = raw_datasets["train"]
         if cfg.dataset.text_key != "text":
             dataset = dataset.rename_column(cfg.dataset.text_key, "text")
 
