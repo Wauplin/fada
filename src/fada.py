@@ -86,8 +86,8 @@ def fada_search(cfg: DictConfig) -> None:
     else:
         log.info(f"Could not find existing dataset with feature annotations, generating one and saving @ {annotated_dataset}!")
         log.info("This may take a while...")
-        dataset = load_dataset(cfg.dataset.builder_name, 
-                               cfg.dataset.config_name)
+        raw_datasets = load_dataset(cfg.dataset.builder_name, 
+                                    cfg.dataset.config_name)
         raw_datasets = prepare_splits(raw_datasets)
         raw_datasets = rename_text_columns(raw_datasets)
         dataset = raw_datasets["train"]
@@ -97,7 +97,7 @@ def fada_search(cfg: DictConfig) -> None:
         if dataset.num_rows > cfg.dataset.max_size:
             log.info(f"Dataset size is larger than dataset.max_size={cfg.dataset.max_size}")
             if str(cfg.dataset.num_per_class) == "infer":
-                num_labels = len(dataset.features['label'].names)
+                num_labels = len(np.unique(dataset['label']))
                 num_per_class = int(cfg.dataset.max_size / num_labels)
             else:
                 num_per_class = cfg.dataset.num_per_class

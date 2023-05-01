@@ -4,3 +4,7 @@ sibyl-tool
 evaluate
 language_tool_python
 hydra-core
+cleanlab
+
+# python -m spacy download en_core_web_sm
+# pip install git+https://github.com/boudinfl/pke.git
