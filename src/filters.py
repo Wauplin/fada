@@ -7,7 +7,7 @@ from huggingface_hub import HfApi, ModelFilter
 from cleanlab.filter import find_label_issues
 
 def partition_dataset_by_class(dataset):
-    classes = dataset.features['label'].names
+    classes = np.unique(dataset['label'])
     num_classes = len(classes)
 
     class_partitions = []
@@ -74,7 +74,7 @@ class CleanLabFilter:
         return np.stack([vectorize(o) for o in output])
 
     def find_num_to_remove_per_class(self, dataset, frac_to_remove=0.1):
-        classes = dataset.features['label'].names
+        classes = np.unique(dataset['label'])
         num_classes = len(classes)
         print(num_classes)
 
@@ -102,9 +102,6 @@ class CleanLabFilter:
     def clean_dataset(self, dataset):
         if self.pipe is None:
             return dataset
-    
-        dataset_len = len(dataset)
-        num_classes = len(dataset.features['label'].names)
 
         pred_probs = self.extract_prediction_probabilities(dataset)
         print(f"pred_probs.shape ({pred_probs.shape})")
