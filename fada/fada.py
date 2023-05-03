@@ -11,21 +11,21 @@ from omegaconf import DictConfig
 
 from datasets import load_dataset, load_from_disk
 
-from transform import Transform
+from fada.transform import Transform
 from extractors import (
     AMRFeatureExtractor,
     AlignmentMetric,
     FluencyMetric,
     GrammarMetric
 )
-from augmenter import Augmenter
-from utils import (
+from fada.augmenter import Augmenter
+from fada.utils import (
     policy_heatmap, 
     implement_policy_probabilities,
     prepare_splits,
     rename_text_columns
 )
-from filters import balance_dataset
+from fada.filters import balance_dataset
 
 def load_class(module_class_str):
     parts = module_class_str.split(".")

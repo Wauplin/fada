@@ -4,12 +4,7 @@ from transformers import pipeline
 from huggingface_hub import HfApi, ModelFilter
 from cleanlab.rank import get_label_quality_scores
 
-# from ..utils import vectorize # TODO: fix this import later
-
-def vectorize(output):
-    sorted_output = sorted(output, key=lambda d: d['label']) 
-    probs = torch.tensor([d['score'] for d in sorted_output])
-    return probs
+from fada.utils import vectorize
 
 class AlignmentMetric:
     """
@@ -89,8 +84,8 @@ class AlignmentMetric:
 
 if __name__ == '__main__':
     
-    from transform import Transform
-    from augmenter import Augmenter
+    from fada.transform import Transform
+    from fada.augmenter import Augmenter
     from datasets import load_dataset
     import sibyl
     import numpy as np
@@ -141,7 +136,7 @@ if __name__ == '__main__':
     print(f"diffed_alignment_scores (mean): {a_scores.mean()}")
 
 
-    # (fada) C:\Users\fabri\Documents\GitHub\fada\src>python -m extractors.alignment
+    # (fada) C:\Users\fabri\Documents\GitHub\fada>python -m fada.extractors.alignment
     # Using distilbert-base-uncased-finetuned-sst-2-english to support cleanlab datalabel issues.
     # original_dataset_details: Dataset({
     #     features: ['text', 'label', 'idx'],

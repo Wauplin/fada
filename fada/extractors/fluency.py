@@ -2,7 +2,6 @@ import evaluate
 import numpy as np
 import transformers
 
-
 class FluencyMetric:
     def __init__(self, model_id='gpt2') -> None:
         """
@@ -57,8 +56,8 @@ class FluencyMetric:
 
 if __name__ == '__main__':
     
-    from transform import Transform
-    from augmenter import Augmenter
+    from fada.transform import Transform
+    from fada.augmenter import Augmenter
     from datasets import load_dataset
     import sibyl
     import numpy as np
@@ -108,7 +107,7 @@ if __name__ == '__main__':
     print(f"diffed_fluency_scores (raw): {f_scores}")
     print(f"diffed_fluency_scores (mean): {f_scores.mean()}")
 
-    # (fada) C:\Users\fabri\Documents\GitHub\fada\src>python -m extractors.fluency
+    # (fada) C:\Users\fabri\Documents\GitHub\fada>python -m fada.extractors.fluency
     # original_dataset_details: Dataset({
     #     features: ['text', 'label', 'idx'],
     #     num_rows: 3

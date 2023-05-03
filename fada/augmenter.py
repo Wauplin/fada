@@ -1,4 +1,4 @@
-from utils import *
+from fada.utils import *
 
 class Augmenter:
     """
@@ -155,7 +155,7 @@ class Augmenter:
 
 if __name__ == '__main__':
 
-    from transform import Transform
+    from fada.transform import Transform
     from datasets import load_dataset
     import sibyl
     import numpy as np

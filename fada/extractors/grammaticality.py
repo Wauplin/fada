@@ -1,7 +1,6 @@
 import language_tool_python
 import numpy as np
 
-
 class GrammarMetric:
     def __init__(self) -> None:
         """

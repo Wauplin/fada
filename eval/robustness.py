@@ -1,21 +1,13 @@
 from transformers import (
     AutoModelForSequenceClassification, 
     AutoTokenizer, 
-    Trainer, 
-    TrainingArguments, 
-    TrainerCallback, 
-    EarlyStoppingCallback
 )
 
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from transformers.trainer_callback import TrainerControl
 from datasets import load_dataset, load_metric, load_from_disk
 import os
-import sys
 import argparse
-import time
-import random
-import shutil
 import torch
 import pandas as pd
 from torch.utils.data import DataLoader

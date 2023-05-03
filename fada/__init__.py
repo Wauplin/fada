@@ -8,5 +8,3 @@ from .extractors import (
     GrammarMetric,
     FluencyMetric
 )
-
-name = "fada"
