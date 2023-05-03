@@ -7,6 +7,7 @@ from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from transformers.trainer_callback import TrainerControl
 from datasets import load_dataset, load_metric, load_from_disk
 import os
+import importlib
 import argparse
 import torch
 import pandas as pd
@@ -30,7 +31,7 @@ from transformers import AutoModelForSequenceClassification, AutoTokenizer
 from datasets import load_dataset
 
 from sibyl import *
-from utils import *
+from fada.utils import *
 
 # https://www.gitmemory.com/issue/QData/TextAttack/424/795806095
 
@@ -93,22 +94,20 @@ def robustness(args):
 
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
-    recipes = [load_class(a) for a in cfg.attacks]
+    recipes = [load_class(a) for a in args.attacks]
 
     run_args = []
     for run_num in range(args.num_runs):
-        for dataset in args.datasets:
             for model in args.models:
                 run_args.append({
                     "run_num":run_num,
-                    "dataset":dataset,
                     "model":model,
                 })
 
     results = []
-    save_file = args.save_file  
-    if os.path.exists(save_file):
-        results.extend(pd.read_csv(save_file).to_dict("records"))
+    save_path = args.save_path  
+    if os.path.exists(save_path):
+        results.extend(pd.read_csv(save_path).to_dict("records"))
         start_position = len(results)
     else:
         start_position = 0
@@ -159,7 +158,7 @@ def robustness(args):
             if recent_checkpoint:
                 checkpoint = os.path.join(checkpoint, recent_checkpoint[-1])
             tokenizer = AutoTokenizer.from_pretrained(checkpoint, local_files_only=True)
-            model = AutoModelForSequenceClassification.from_pretrained(checkpoint, num_labels=num_classes).to(device)
+            model = AutoModelForSequenceClassification.from_pretrained(checkpoint).to(device)
 
         #############################################################
         ## TextAttacks ##############################################
@@ -206,7 +205,7 @@ def robustness(args):
 
         # save results
         df = pd.DataFrame(results)
-        df.to_csv(save_file, index=False)
+        df.to_csv(save_path, index=False)
 
 
 if __name__ == "__main__":

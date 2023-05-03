@@ -19,7 +19,7 @@ import torch
 import pandas as pd
 import random
 
-from utils import *
+from ..fada.utils import *
 
 random.seed(130)
 torch.use_deterministic_algorithms(False)
