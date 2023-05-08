@@ -338,7 +338,7 @@ def fada_augment(cfg: DictConfig) -> None:
             log.info("Commencing with creating all augmented datasets - uniform + fada-sweep")
 
             log.info("Starting uniform aug...")
-            save_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.{cfg.augment.technique}.{cfg.dataset.num_per_class}"
+            save_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.uniform.{cfg.dataset.num_per_class}"
             save_path = os.path.join(cfg.dataset_dir, save_name)
             augmenter = Augmenter(dataset=dataset, 
                         transforms=transforms,  
@@ -382,7 +382,7 @@ def fada_augment(cfg: DictConfig) -> None:
                 torch.cuda.empty_cache()
                 log.info(f"{cfg.augment.technique} augmented dataset saved @ {save_path}!")
     
-    log.info(f"{cfg.augment.technique} augmented dataset saved @ {save_path}!")
+    log.info(f"{cfg.augment.technique} augmented dataset completed!")
 
 if __name__ == "__main__":
     fada_search()
