@@ -19,7 +19,7 @@ import torch
 import pandas as pd
 import random
 
-from ..fada.utils import *
+from fada.utils import *
 
 random.seed(130)
 torch.use_deterministic_algorithms(False)
@@ -38,9 +38,9 @@ parser.add_argument('--dataset-keys', nargs='+', default=['text'],
                     type=str, help='dataset info needed for load_dataset.')
 parser.add_argument('--models', nargs='+',  default=['prajjwal1/bert-tiny', 'bert-base-uncased'], 
                     type=str, help='pretrained huggingface models to train')
-parser.add_argument('--data-dir', type=str, default="../src/fadata/datasets/",
+parser.add_argument('--data-dir', type=str, default="./fada/fadata/datasets/",
                     help='path to data folders')
-parser.add_argument('--save-dir', type=str, default="./pretrained/",
+parser.add_argument('--save-dir', type=str, default="./eval/pretrained/",
                     help='path to data folders')
 parser.add_argument('--num_epochs', default=10, type=int, metavar='N',
                     help='number of total epochs to run')
@@ -58,7 +58,7 @@ parser.add_argument('--gpus', default='0,1,2,3', type=str,
                     help='id(s) for CUDA_VISIBLE_DEVICES')
 parser.add_argument('--num_runs', default=3, type=int, metavar='N',
                     help='number of times to repeat the training')
-parser.add_argument('--save-file', type=str, default='./results/imdb.plain_text.csv',
+parser.add_argument('--save-file', type=str, default='./eval/results/imdb.plain_text.csv',
                     help='name for the csv file to save with results')
 
 args = parser.parse_args()
@@ -146,8 +146,8 @@ def train(args):
         # tokenize datasets
         def preprocess_function(batch):
             if sentence2_key is None:
-                return tokenizer(batch[sentence1_key], padding=True, truncation=True)
-            return tokenizer(batch[sentence1_key], batch[sentence2_key], padding=True, truncation=True)
+                return tokenizer(batch[sentence1_key], padding=True, truncation=True, max_length=512)
+            return tokenizer(batch[sentence1_key], batch[sentence2_key], padding=True, truncation=True, max_length=512)
 
         tokenized_datasets = raw_datasets.map(preprocess_function, batched=True)
 

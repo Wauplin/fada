@@ -3,10 +3,10 @@ defaults:
     - transforms: sibyl
     - features: amr
 
-working_dir: "./fadata/"
-amr_dir: "./fadata/amrs/"
-dataset_dir: "./fadata/datasets/"
-tfim_dir: "./fadata/tfim/"
+working_dir: "./fada/fadata/"
+amr_dir: "./fada/fadata/amrs/"
+dataset_dir: "./fada/fadata/datasets/"
+tfim_dir: "./fada/fadata/tfim/"
 
 amr_extractor:
     max_sent_len: 64
@@ -33,7 +33,7 @@ fada:
     force: False
 
 augment:
-    technique: "fada-sweep" # uniform, fada, fada-sweep
+    technique: "all" # uniform, fada, fada-sweep, all
     num_transforms_to_apply: 1
     num_augmentations_per_record: 1
     batch_size: 8
