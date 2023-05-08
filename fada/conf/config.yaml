@@ -1,0 +1,41 @@
+defaults:
+    - _self_
+    - transforms: sibyl
+    - features: amr
+
+working_dir: "./fada/fadata/"
+amr_dir: "./fada/fadata/amrs/"
+dataset_dir: "./fada/fadata/datasets/"
+tfim_dir: "./fada/fadata/tfim/"
+
+amr_extractor:
+    max_sent_len: 64
+    batch_size: 8
+
+alignment_extractor:
+    model_id: "distilbert-base-uncased-finetuned-sst-2-english"
+
+dataset:
+    builder_name: "glue"
+    config_name: "sst2"
+    text_key: "sentence"
+    task_name: "sentiment"
+    num_per_class: "infer" # 10, 200, 2500, "min", "infer"
+    max_size: 100000
+
+fada:
+    min_coverage: 128
+    num_to_transform_per_step: 128
+    max_iterations: 8
+    c_a: 0.8
+    c_f: 0.1
+    c_g: 0.1
+    force: False
+
+augment:
+    technique: "all" # uniform, fada, fada-sweep, all
+    num_transforms_to_apply: 1
+    num_augmentations_per_record: 1
+    batch_size: 8
+    keep_originals: True
+    force: False
