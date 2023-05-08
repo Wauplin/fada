@@ -146,8 +146,8 @@ def train(args):
         # tokenize datasets
         def preprocess_function(batch):
             if sentence2_key is None:
-                return tokenizer(batch[sentence1_key], padding=True, truncation=True)
-            return tokenizer(batch[sentence1_key], batch[sentence2_key], padding=True, truncation=True)
+                return tokenizer(batch[sentence1_key], padding=True, truncation=True, max_length=512)
+            return tokenizer(batch[sentence1_key], batch[sentence2_key], padding=True, truncation=True, max_length=512)
 
         tokenized_datasets = raw_datasets.map(preprocess_function, batched=True)
 
