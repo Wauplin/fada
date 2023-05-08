@@ -289,7 +289,7 @@ def fada_augment(cfg: DictConfig) -> None:
 
             policy_probabilities = implement_policy_probabilities(tfim, features)
 
-            save_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.{cfg.augment.technique}.{cfg.dataset.num_per_class}.a.{cfg.fada.c_a}.f.{cfg.fada.c_f}.g.{cfg.fada.c_g}"
+            save_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.fada.{cfg.dataset.num_per_class}.a.{cfg.fada.c_a}.f.{cfg.fada.c_f}.g.{cfg.fada.c_g}"
             save_path = os.path.join(cfg.dataset_dir, save_name)
             augmenter = Augmenter(dataset=dataset, 
                         transforms=transforms,  
@@ -318,7 +318,7 @@ def fada_augment(cfg: DictConfig) -> None:
 
                 policy_probabilities = implement_policy_probabilities(tfim, features)
 
-                save_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.{cfg.augment.technique}.{cfg.dataset.num_per_class}.a.{c_a}.f.{c_f}.g.{c_g}"
+                save_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.fada.{cfg.dataset.num_per_class}.a.{c_a}.f.{c_f}.g.{c_g}"
                 save_path = os.path.join(cfg.dataset_dir, save_name)
                 augmenter = Augmenter(dataset=dataset, 
                             transforms=transforms,  
@@ -350,7 +350,7 @@ def fada_augment(cfg: DictConfig) -> None:
             aug_dataset = augmenter.augment()
             aug_dataset.save_to_disk(save_path)
             torch.cuda.empty_cache()
-            log.info(f"{cfg.augment.technique} augmented dataset saved @ {save_path}!")
+            log.info(f"uniform augmented dataset saved @ {save_path}!")
             
             log.info("Starting fada augs...")
 
@@ -368,7 +368,7 @@ def fada_augment(cfg: DictConfig) -> None:
 
                 policy_probabilities = implement_policy_probabilities(tfim, features)
 
-                save_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.{cfg.augment.technique}.{cfg.dataset.num_per_class}.a.{c_a}.f.{c_f}.g.{c_g}"
+                save_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.fada.{cfg.dataset.num_per_class}.a.{c_a}.f.{c_f}.g.{c_g}"
                 save_path = os.path.join(cfg.dataset_dir, save_name)
                 augmenter = Augmenter(dataset=dataset, 
                             transforms=transforms,  
@@ -380,7 +380,7 @@ def fada_augment(cfg: DictConfig) -> None:
                 aug_dataset = augmenter.augment()
                 aug_dataset.save_to_disk(save_path)
                 torch.cuda.empty_cache()
-                log.info(f"{cfg.augment.technique} augmented dataset saved @ {save_path}!")
+                log.info(f"fada augmented dataset saved @ {save_path}!")
     
     log.info(f"{cfg.augment.technique} augmented dataset completed!")
 
