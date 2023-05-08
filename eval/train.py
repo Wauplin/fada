@@ -19,7 +19,7 @@ import torch
 import pandas as pd
 import random
 
-from ..fada.utils import *
+from fada.utils import *
 
 random.seed(130)
 torch.use_deterministic_algorithms(False)
@@ -38,9 +38,9 @@ parser.add_argument('--dataset-keys', nargs='+', default=['text'],
                     type=str, help='dataset info needed for load_dataset.')
 parser.add_argument('--models', nargs='+',  default=['prajjwal1/bert-tiny', 'bert-base-uncased'], 
                     type=str, help='pretrained huggingface models to train')
-parser.add_argument('--data-dir', type=str, default="../src/fadata/datasets/",
+parser.add_argument('--data-dir', type=str, default="./fada/fadata/datasets/",
                     help='path to data folders')
-parser.add_argument('--save-dir', type=str, default="./pretrained/",
+parser.add_argument('--save-dir', type=str, default="./eval/pretrained/",
                     help='path to data folders')
 parser.add_argument('--num_epochs', default=10, type=int, metavar='N',
                     help='number of total epochs to run')
