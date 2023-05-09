@@ -44,12 +44,12 @@ def fada_search(cfg: DictConfig) -> None:
 
     log.info("Setting up working directories.")
     os.makedirs(cfg.working_dir, exist_ok=True)
-    os.makedirs(cfg.amr_dir, exist_ok=True)
     os.makedirs(cfg.dataset_dir, exist_ok=True)
-    os.makedirs(cfg.tfim_dir, exist_ok=True)
+    os.makedirs(cfg.amr_extractor.amr_dir, exist_ok=True)
+    os.makedirs(cfg.fada.tfim_dir, exist_ok=True)
 
     log.info("Checking to see if fada_search has been run for this dataset before...")
-    matrix_paths = glob.glob(os.path.join(cfg.tfim_dir, f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}*"))
+    matrix_paths = glob.glob(os.path.join(cfg.fada.tfim_dir, f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}*"))
     if len(matrix_paths) > 0:
         log.info("Found existing TFIM metadata!")
         if not cfg.fada.force:
@@ -67,7 +67,7 @@ def fada_search(cfg: DictConfig) -> None:
 
     log.info("Initializing metric extractors.")
     feature_extractor = AMRFeatureExtractor(
-        amr_save_path=os.path.join(cfg.amr_dir, f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.pkl"),
+        amr_save_path=cfg.amr_extractor.amr_save_path,
         max_sent_len=cfg.amr_extractor.max_sent_len, 
         batch_size=cfg.amr_extractor.batch_size)
     a_metric = AlignmentMetric(
@@ -84,8 +84,7 @@ def fada_search(cfg: DictConfig) -> None:
         dataset = load_from_disk(annotated_dataset_path)
         features = np.array(dataset["features"])
     else:
-        log.info(f"Could not find existing dataset with feature annotations, generating one and saving @ {annotated_dataset_path}!")
-        log.info("This may take a while...")
+        log.info(f"Could not find existing dataset with feature annotations, generating one and saving @ {annotated_dataset_path}!\nThis may take a while...")
         raw_datasets = load_dataset(cfg.dataset.builder_name, 
                                     cfg.dataset.config_name)
         raw_datasets = prepare_splits(raw_datasets)
@@ -180,12 +179,12 @@ def fada_search(cfg: DictConfig) -> None:
 
         log.info("Saving intermediate matrices...")
         save_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.fada"
-        np.save(os.path.join(cfg.tfim_dir, f"{save_name}.counts-step-{i}"), counts)
-        np.save(os.path.join(cfg.tfim_dir, f"{save_name}.changes-step-{i}"), changes)
-        np.save(os.path.join(cfg.tfim_dir, f"{save_name}.alignment-step-{i}"), alignment_scores)
-        np.save(os.path.join(cfg.tfim_dir, f"{save_name}.fluency-step-{i}"), fluency_scores)
-        np.save(os.path.join(cfg.tfim_dir, f"{save_name}.grammar-step-{i}"), grammar_scores)
-        np.save(os.path.join(cfg.tfim_dir, f"{save_name}.tfim-step-{i}"), tfim)
+        np.save(os.path.join(cfg.fada.tfim_dir, f"{save_name}.counts-step-{i}"), counts)
+        np.save(os.path.join(cfg.fada.tfim_dir, f"{save_name}.changes-step-{i}"), changes)
+        np.save(os.path.join(cfg.fada.tfim_dir, f"{save_name}.alignment-step-{i}"), alignment_scores)
+        np.save(os.path.join(cfg.fada.tfim_dir, f"{save_name}.fluency-step-{i}"), fluency_scores)
+        np.save(os.path.join(cfg.fada.tfim_dir, f"{save_name}.grammar-step-{i}"), grammar_scores)
+        np.save(os.path.join(cfg.fada.tfim_dir, f"{save_name}.tfim-step-{i}"), tfim)
 
         i += 1
         
@@ -203,7 +202,7 @@ def fada_augment(cfg: DictConfig) -> None:
     log.info("Setting up working directories.")
     os.makedirs(cfg.working_dir, exist_ok=True)
     os.makedirs(cfg.dataset_dir, exist_ok=True)
-    os.makedirs(cfg.tfim_dir, exist_ok=True)
+    os.makedirs(cfg.fada.tfim_dir, exist_ok=True)
 
     dataset_matcher = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.{cfg.augment.technique}.{cfg.dataset.num_per_class}*"
     log.info(f"Checking to see if fada_augment has been run for this dataset ({dataset_matcher}) before...")
@@ -268,16 +267,16 @@ def fada_augment(cfg: DictConfig) -> None:
     if "fada" in cfg.augment.technique or "all" in cfg.augment.technique:
 
         log.info("Loading final TFIM component matrices.")
-        matrix_paths = glob.glob(os.path.join(cfg.tfim_dir, f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}*"))
+        matrix_paths = glob.glob(os.path.join(cfg.fada.tfim_dir, f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}*"))
         max_id = int(max([m.split("-")[-1].split(".")[0] for m in matrix_paths]))
 
         save_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.fada"
-        counts    = np.load(os.path.join(cfg.tfim_dir, f"{save_name}.counts-step-{max_id}.npy"))
-        changes   = np.load(os.path.join(cfg.tfim_dir, f"{save_name}.changes-step-{max_id}.npy"))
-        alignment = np.load(os.path.join(cfg.tfim_dir, f"{save_name}.alignment-step-{max_id}.npy"))
-        fluency   = np.load(os.path.join(cfg.tfim_dir, f"{save_name}.fluency-step-{max_id}.npy"))
-        grammar   = np.load(os.path.join(cfg.tfim_dir, f"{save_name}.grammar-step-{max_id}.npy"))
-        tfim      = np.load(os.path.join(cfg.tfim_dir, f"{save_name}.tfim-step-{max_id}.npy"))
+        counts    = np.load(os.path.join(cfg.fada.tfim_dir, f"{save_name}.counts-step-{max_id}.npy"))
+        changes   = np.load(os.path.join(cfg.fada.tfim_dir, f"{save_name}.changes-step-{max_id}.npy"))
+        alignment = np.load(os.path.join(cfg.fada.tfim_dir, f"{save_name}.alignment-step-{max_id}.npy"))
+        fluency   = np.load(os.path.join(cfg.fada.tfim_dir, f"{save_name}.fluency-step-{max_id}.npy"))
+        grammar   = np.load(os.path.join(cfg.fada.tfim_dir, f"{save_name}.grammar-step-{max_id}.npy"))
+        tfim      = np.load(os.path.join(cfg.fada.tfim_dir, f"{save_name}.tfim-step-{max_id}.npy"))
 
         if cfg.augment.technique == "fada":
 

@@ -1,37 +1,24 @@
-from transformers import (
-    AutoModelForSequenceClassification, 
-    AutoTokenizer, 
-)
-
-from sklearn.metrics import accuracy_score, precision_recall_fscore_support
-from transformers.trainer_callback import TrainerControl
-from datasets import load_dataset, load_metric, load_from_disk
+from datasets import load_dataset, load_from_disk
 import os
+import glob
 import importlib
-import argparse
+import logging
 import torch
 import pandas as pd
-from torch.utils.data import DataLoader
+import hydra
+from omegaconf import DictConfig, OmegaConf
 
 import textattack
 from textattack import Attacker
 from textattack.models.wrappers import ModelWrapper
 from textattack.datasets import HuggingFaceDataset
-from textattack.attack_recipes import (
-    TextFoolerJin2019, 
-    DeepWordBugGao2018, 
-    Pruthi2019, 
-    TextBuggerLi2018, 
-    PSOZang2020, 
-    CheckList2020, 
-    BERTAttackLi2020
-)
 
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 from datasets import load_dataset
 
 from sibyl import *
 from fada.utils import *
+from fada.extractors import AMRFeatureExtractor
 
 # https://www.gitmemory.com/issue/QData/TextAttack/424/795806095
 
@@ -62,103 +49,105 @@ class CustomModelWrapper(ModelWrapper):
         out = torch.cat(out)
         return out
 
-parser = argparse.ArgumentParser(description='Sibyl Adversarial Attacker')
+@hydra.main(version_base=None, config_path="../fada/conf", config_name="config")
+def robustness(cfg: DictConfig) -> None:
 
-parser.add_argument('--num_runs', default=3, type=int, metavar='N',
-                    help='number of times to repeat the training')
-parser.add_argument('--dataset-config', nargs='+', default=['glue', 'sst2'],
-                    type=str, help='dataset info needed for load_dataset.')
-parser.add_argument('--dataset-keys', nargs='+', default=['text'],
-                    type=str, help='dataset info needed for load_dataset.')
-parser.add_argument('--models', nargs='+',  default=['bert-base-uncased'], 
-                    type=str, help='pretrained huggingface models to attack')
-parser.add_argument('--attacks', 
-                    nargs='+',  
-                    default=[
-                        'textattack.attack_recipes.TextFoolerJin2019',
-                        'textattack.attack_recipes.DeepWordBugGao2018',
-                        'textattack.attack_recipes.TextBuggerLi2018',
-                        'textattack.attack_recipes.PSOZang2020',
-                        'textattack.attack_recipes.CheckList2020',
-                        'textattack.attack_recipes.BERTAttackLi2020',
-                    ], 
-                    type=str, help='pretrained huggingface models to attack')
-parser.add_argument('--save-path', type=str, default='NLP_adv_robustness.csv',
-                    help='name for the csv file to save with results')
-parser.add_argument('--num_advs', default=100, type=int, metavar='N',
-                    help='number of adversarial examples to generate')
+    log = logging.getLogger(__name__)
 
-args = parser.parse_args()
+    log.info("Starting robustness evaluation...")
+    log.info(OmegaConf.to_yaml(cfg))
 
-def robustness(args):
+    log.info("Setting up working directories.")
+    os.makedirs(cfg.results_dir, exist_ok=True)
 
-    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+    device = torch.device('cpu')
+    if torch.cuda.is_available():
+        os.environ["CUDA_VISIBLE_DEVICES"] = cfg.robustness.visible_cuda_devices
+        device = torch.device('cuda')
+    log.info(f"training on device={device}")
 
-    recipes = [load_class(a) for a in args.attacks]
+    #############################################################
+    ## Search for pretrained models #############################
+    #############################################################
+
+    model_paths = glob.glob(cfg.robustness.model_matcher)
+    fine_tuned_models = [m.split("\\")[-1] for m in model_paths]
+
+    #############################################################
+    ## Prepare training iterations ##############################
+    #############################################################
 
     run_args = []
-    for run_num in range(args.num_runs):
-            for model in args.models:
-                run_args.append({
-                    "run_num":run_num,
-                    "model":model,
-                })
+    for run_num in range(cfg.robustness.num_runs):
+        for model in fine_tuned_models:
+            run_args.append({
+                "run_num":run_num,
+                "fine_tuned_model": model,
+            })
+
+    log.info(run_args)
 
     results = []
-    save_path = args.save_path  
-    if os.path.exists(save_path):
-        results.extend(pd.read_csv(save_path).to_dict("records"))
+    if os.path.exists(cfg.robustness.save_path):
+        results.extend(pd.read_csv(cfg.robustness.save_path).to_dict("records"))
         start_position = len(results)
     else:
         start_position = 0
 
-    print('starting at position {}'.format(start_position))
+    log.info('starting at position {}'.format(start_position))
     for run_arg in run_args[start_position:]:
         
         #############################################################
         ## Initializations ##########################################
         #############################################################
         run_num = run_arg['run_num']
-        model_checkpoint = run_arg['model']
+        trained_model = run_arg['fine_tuned_model']
 
-        print(pd.DataFrame([run_arg]))
-
-        if len(args.dataset_keys) == 1:
-            sentence1_key, sentence2_key = args.dataset_keys[0], None
-        else:
-            # if not 1 then assume 2 keys
-            sentence1_key, sentence2_key = args.dataset_keys
+        log.info(pd.DataFrame([run_arg]))
 
         #############################################################
         ## Dataset Preparation ######################################
         #############################################################
 
-        dataset_name = args.dataset_config[0]
-
-        raw_datasets = load_dataset(*args.dataset_config)
-        if 'sst2' in args.dataset_config:
-            raw_datasets.pop("test") # test set is not usable (all labels -1)
-
-        raw_datasets = prepare_splits(raw_datasets)
-        raw_datasets = rename_text_columns(raw_datasets)
-        raw_datasets = raw_datasets.shuffle(seed=run_num)
-
-        dataset = raw_datasets["test"]
-        num_labels = len(dataset.features["label"].names)
-
-        print(dataset)
-        print('Number of classes:', num_labels)
-                
+        annotated_dataset_path = os.path.join(cfg.dataset_dir, 
+            f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.annotated.test")
+        if os.path.exists(annotated_dataset_path):
+            log.info(f"Found existing feature annotated test dataset @ {annotated_dataset_path}!")
+            dataset = load_from_disk(annotated_dataset_path)
+        else:
+            log.info(f"Could not find existing test dataset with feature annotations, generating one and saving @ {annotated_dataset_path}!\nThis may take a while...")
+            raw_datasets = load_dataset(cfg.dataset.builder_name, 
+                                        cfg.dataset.config_name)        
+            if 'sst2' in cfg.dataset.config_name:
+                raw_datasets.pop("test") # test set is not usable (all labels -1)
+            raw_datasets = prepare_splits(raw_datasets)
+            raw_datasets = rename_text_columns(raw_datasets)
+            raw_datasets = raw_datasets.shuffle(seed=run_num)
+            dataset = raw_datasets["test"]
+            if cfg.dataset.text_key != "text" and cfg.dataset.text_key in dataset.features.keys():
+                dataset = dataset.rename_column(cfg.dataset.text_key, "text")
+            feature_extractor = AMRFeatureExtractor(
+                amr_save_path=cfg.amr_extractor.amr_save_path,
+                max_sent_len=cfg.amr_extractor.max_sent_len, 
+                batch_size=cfg.amr_extractor.batch_size)
+            features = feature_extractor(dataset["text"])
+            dataset = dataset.add_column("features", [f for f in features])
+            dataset.save_to_disk(annotated_dataset_path)
+        
+        log.info(dataset)
+         
         #############################################################
         ## Model + Tokenizer ########################################
         #############################################################
 
-        if os.path.exists(model):
-            recent_checkpoint = [name for name in os.listdir(checkpoint) if 'checkpoint' in name]
-            if recent_checkpoint:
-                checkpoint = os.path.join(checkpoint, recent_checkpoint[-1])
-            tokenizer = AutoTokenizer.from_pretrained(checkpoint, local_files_only=True)
-            model = AutoModelForSequenceClassification.from_pretrained(checkpoint).to(device)
+        log.info("Loading model...")
+        loaded_checkpoint = False
+        if os.path.exists(trained_model):
+            tokenizer = AutoTokenizer.from_pretrained(trained_model, local_files_only=True)
+            model = AutoModelForSequenceClassification.from_pretrained(trained_model).to(device)
+            loaded_checkpoint = True
+
+        return 
 
         #############################################################
         ## TextAttacks ##############################################
@@ -166,17 +155,18 @@ def robustness(args):
 
         out = {}
         out.update({
-            "run_num":          run_num,
-            "checkpoint":       checkpoint,
-            "dataset_config":   args.dataset_config,
-            "num_adversaries":  args.num_adversaries,
+            "run_num":              run_num,
+            "trained_model":        trained_model,
+            "dataset.builder_name": cfg.dataset.builder_name,
+            "dataset.config_name":  cfg.dataset.config_name,
+            "num_adversaries":      cfg.num_adversaries,
         })
 
         if loaded_checkpoint:
 
             mw = CustomModelWrapper(model, tokenizer)
-            dataset = HuggingFaceDataset(test_dataset, shuffle=True)
-            attack_args = textattack.AttackArgs(num_examples=args.num_advs, disable_stdout=True)
+            dataset = HuggingFaceDataset(dataset, shuffle=True)
+            attack_args = textattack.AttackArgs(num_examples=cfg.num_advs, disable_stdout=True)
 
             for recipe in recipes:
 
@@ -205,8 +195,8 @@ def robustness(args):
 
         # save results
         df = pd.DataFrame(results)
-        df.to_csv(save_path, index=False)
+        df.to_csv(cfg.robustness.save_path, index=False)
 
 
 if __name__ == "__main__":
-    robustness(args)
+    robustness()
