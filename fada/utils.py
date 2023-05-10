@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
 import torch
-from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 import seaborn as sns
 import matplotlib.pyplot as plt
 
@@ -30,19 +29,6 @@ def augment_data(batch, transform, keep_originals=True):
     
 def percent_dataset_changed(d1, d2):
     return sum([t1['text'] != t2['text'] for t1, t2 in zip(d1, d2)]) / len(d1) 
-
-def compute_metrics(eval_pred):
-    predictions, labels = eval_pred
-    acc = accuracy_score(labels, predictions.argmax(-1))
-    precision, recall, fbeta_score, support = precision_recall_fscore_support(
-        y_true=labels, 
-        y_pred=predictions.argmax(-1), 
-        average="weighted", 
-        zero_division=0)
-    return { 'accuracy': acc , 
-             'precision': precision, 
-             'recall': recall, 
-             'fbeta_score': fbeta_score} 
 
 def vectorize(output):
     sorted_output = sorted(output, key=lambda d: d['label']) 
