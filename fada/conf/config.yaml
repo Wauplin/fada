@@ -25,7 +25,7 @@ dataset:
     max_size: 100000
 
 fada: 
-    tfim_dir: "${working_dir}/tfim/"
+    tfim_dir: "${working_dir}/tfim"
     min_coverage: 128
     num_to_transform_per_step: 128
     max_iterations: 8
