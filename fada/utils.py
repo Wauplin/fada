@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
 import torch
-from sibyl import acc_at_k
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -44,15 +43,6 @@ def compute_metrics(eval_pred):
              'precision': precision, 
              'recall': recall, 
              'fbeta_score': fbeta_score} 
-
-def compute_accuracy(predictions, labels):
-    if not isinstance(labels, np.ndarray):
-        labels = np.array(labels)
-    if len(labels.shape) > 1:
-        acc = acc_at_k(labels, predictions, k=2)       
-    else:
-        acc = accuracy_score(labels, np.argmax(predictions, -1))
-    return acc
 
 def vectorize(output):
     sorted_output = sorted(output, key=lambda d: d['label']) 
