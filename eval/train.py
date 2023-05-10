@@ -13,11 +13,14 @@ from transformers import (
 import evaluate
 
 import os
-import argparse
 import time
+import glob
+import logging
 import torch
 import pandas as pd
 import random
+import hydra
+from omegaconf import DictConfig, OmegaConf
 
 from fada.utils import *
 
@@ -26,128 +29,106 @@ torch.use_deterministic_algorithms(False)
 
 os.environ["WANDB_DISABLED"] = "true"
 
-# argparse
-
-parser = argparse.ArgumentParser(description='FADA Trainer')
-
-parser.add_argument('--techniques', nargs='+', default=[],
-                    type=str, help='technique used to generate augmented data')
-parser.add_argument('--dataset-config', nargs='+', default=['glue', 'sst2'],
-                    type=str, help='dataset info needed for load_dataset.')
-parser.add_argument('--dataset-keys', nargs='+', default=['text'],
-                    type=str, help='dataset info needed for load_dataset.')
-parser.add_argument('--models', nargs='+',  default=['prajjwal1/bert-tiny', 'bert-base-uncased'], 
-                    type=str, help='pretrained huggingface models to train')
-parser.add_argument('--data-dir', type=str, default="./fada/fadata/datasets/",
-                    help='path to data folders')
-parser.add_argument('--save-dir', type=str, default="./eval/pretrained/",
-                    help='path to data folders')
-parser.add_argument('--num_epochs', default=10, type=int, metavar='N',
-                    help='number of total epochs to run')
-parser.add_argument('--logging_steps_per_epoch', default=10, type=int, metavar='N',
-                    help='number of times to run validation + log per epoch')
-parser.add_argument('--early_stopping_patience', default=10, type=int, metavar='N',
-                    help='number of times the validation metric can be lower before stopping training')
-parser.add_argument('--gradient_accumulation_steps', default=1, type=int, metavar='N',
-                    help='number of steps before updating the model weights')
-parser.add_argument('--train-batch-size', default=2, type=int, metavar='N',
-                    help='train batchsize')
-parser.add_argument('--eval-batch-size', default=16, type=int, metavar='N',
-                    help='eval batchsize') 
-parser.add_argument('--gpus', default='0,1,2,3', type=str,
-                    help='id(s) for CUDA_VISIBLE_DEVICES')
-parser.add_argument('--num_runs', default=3, type=int, metavar='N',
-                    help='number of times to repeat the training')
-parser.add_argument('--save-file', type=str, default='./eval/results/imdb.plain_text.csv',
-                    help='name for the csv file to save with results')
-
-args = parser.parse_args()
-# print(args)
-
 #############################################################
 ## Main Loop Functionality ##################################
 #############################################################
 
-def train(args):
+@hydra.main(version_base=None, config_path="../fada/conf/", config_name="config")
+def train(cfg: DictConfig) -> None:
 
-    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-    # print(f"device={device}")
+    log = logging.getLogger(__name__)
+
+    log.info("Starting training...")
+    log.info(OmegaConf.to_yaml(cfg))
+
+    log.info("Setting up working directories.")
+    os.makedirs(cfg.results_dir, exist_ok=True)
+
+    device = torch.device('cpu')
+    if torch.cuda.is_available():
+        os.environ["CUDA_VISIBLE_DEVICES"] = cfg.train.visible_cuda_devices
+        device = torch.device('cuda')
+    log.info(f"training on device={device}")
+
+    #############################################################
+    ## Search for datasets ######################################
+    #############################################################
+
+    dataset_paths = glob.glob(os.path.join(cfg.dataset_dir, cfg.train.dataset_matcher))
+    dataset_techniques = [p.split("\\")[-1] for p in dataset_paths]
+
+    #############################################################
+    ## Prepare training iterations ##############################
+    #############################################################
 
     run_args = []
-    for run_num in range(args.num_runs):
-        for model in args.models:
-            for technique in args.techniques:
+    for run_num in range(cfg.train.num_runs):
+        for model in cfg.train.base_models:
+            for technique in dataset_techniques:
                 run_args.append({
                     "run_num":run_num,
                     "technique":technique,
-                    "model":model,
+                    "base_model":model,
                 })
 
-    print(run_args)
+    log.info(run_args)
 
     results = []
-    save_file = args.save_file  
-    if os.path.exists(save_file):
-        results.extend(pd.read_csv(save_file).to_dict("records"))
+    if os.path.exists(cfg.train.save_path):
+        results.extend(pd.read_csv(cfg.train.save_path).to_dict("records"))
         start_position = len(results)
     else:
         start_position = 0
 
-    print('starting at position {}'.format(start_position))
+    log.info('starting at position {}'.format(start_position))
     for run_arg in run_args[start_position:]:
 
         #############################################################
         ## Initializations ##########################################
         #############################################################
-        run_num = run_arg['run_num']
-        technique = run_arg['technique']
-        model_checkpoint = run_arg['model']
+        run_num    = run_arg['run_num']
+        technique  = run_arg['technique']
+        base_model = run_arg['base_model']
 
-        print(pd.DataFrame([run_arg]))
-
-        if len(args.dataset_keys) == 1:
-            sentence1_key, sentence2_key = args.dataset_keys[0], None
-        else:
-            # if not 1 then assume 2 keys
-            sentence1_key, sentence2_key = args.dataset_keys
+        log.info(pd.DataFrame([run_arg]))
 
         #############################################################
         ## Dataset Preparation ######################################
         #############################################################
 
-        dataset_name = args.dataset_config[0]
-
-        raw_datasets = load_dataset(*args.dataset_config)
-        if 'sst2' in args.dataset_config:
+        log.info("Loading datasets...")
+        raw_datasets = load_dataset(cfg.dataset.builder_name, 
+                                    cfg.dataset.config_name)
+        if 'sst2' in cfg.dataset.config_name:
             raw_datasets.pop("test") # test set is not usable (all labels -1)
 
+        log.info("Preparing datasets splits...")
         raw_datasets = prepare_splits(raw_datasets)
         raw_datasets = rename_text_columns(raw_datasets)
         raw_datasets = raw_datasets.shuffle(seed=run_num)
 
         num_labels = len(raw_datasets["train"].features["label"].names)
-
+        
+        log.info("Loading prepared training dataset...")
         if technique != "orig":
-            save_path = os.path.join(args.data_dir, technique)
+            save_path = os.path.join(cfg.dataset_dir, technique)
             train_dataset = load_from_disk(save_path)
             raw_datasets["train"] = train_dataset
 
-        print(raw_datasets)
-        print('Number of classes:', num_labels)
+        log.info(raw_datasets)
+        log.info(f"Number of classes: {num_labels}")
 
         #############################################################
         ## Model + Tokenize #########################################
         #############################################################
         
-        checkpoint = args.save_dir + model_checkpoint + '-' + "_".join(args.dataset_config) + "_" + technique
-        tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
-        model = AutoModelForSequenceClassification.from_pretrained(model_checkpoint, num_labels=num_labels).to(device)
+        log.info("Loading model + tokenizer...")
+        tokenizer = AutoTokenizer.from_pretrained(base_model)
+        model = AutoModelForSequenceClassification.from_pretrained(base_model, num_labels=num_labels).to(device)
 
         # tokenize datasets
         def preprocess_function(batch):
-            if sentence2_key is None:
-                return tokenizer(batch[sentence1_key], padding=True, truncation=True, max_length=512)
-            return tokenizer(batch[sentence1_key], batch[sentence2_key], padding=True, truncation=True, max_length=512)
+            return tokenizer(batch[cfg.dataset.text_key], padding=True, truncation=True, max_length=512)
 
         tokenized_datasets = raw_datasets.map(preprocess_function, batched=True)
 
@@ -155,6 +136,7 @@ def train(args):
         ## Metrics ##################################################
         #############################################################
 
+        log.info("Loading evaluation metrics...")
         metrics = evaluate.combine([
             evaluate.load('accuracy'), 
             ConfiguredMetric(evaluate.load('precision'), average='weighted'),
@@ -173,7 +155,7 @@ def train(args):
 
         callbacks = []
         escb = EarlyStoppingCallback(
-            early_stopping_patience=args.early_stopping_patience
+            early_stopping_patience=cfg.train.early_stopping_patience
         )
         callbacks.append(escb)
 
@@ -181,22 +163,26 @@ def train(args):
         ## Training  ################################################
         #############################################################
 
-        max_steps = (len(tokenized_datasets["train"]) * args.num_epochs // args.gradient_accumulation_steps) // args.train_batch_size
-        logging_steps = (max_steps // args.num_epochs) // args.logging_steps_per_epoch
+        base_model_rename = base_model.replace("\\", ".")
+        output_dir = os.path.join(cfg.train.trained_models_dir, f"{base_model_rename}.{technique}")
+
+        max_steps = (len(tokenized_datasets["train"]) * cfg.train.num_epochs // cfg.train.gradient_accumulation_steps) // cfg.train.train_batch_size
+        logging_steps = (max_steps // cfg.train.num_epochs) // cfg.train.logging_steps_per_epoch
 
         training_args = TrainingArguments(
-            output_dir=checkpoint,
+            output_dir=output_dir,
             overwrite_output_dir=True,
             max_steps=max_steps,
             save_steps=logging_steps,
             save_total_limit=1,
-            per_device_train_batch_size=args.train_batch_size,
-            per_device_eval_batch_size=args.eval_batch_size,
-            gradient_accumulation_steps=args.gradient_accumulation_steps, 
+            save_strategy = "no",
+            per_device_train_batch_size=cfg.train.train_batch_size,
+            per_device_eval_batch_size=cfg.train.eval_batch_size,
+            gradient_accumulation_steps=cfg.train.gradient_accumulation_steps, 
             warmup_steps=logging_steps,
-            learning_rate=2e-5,
-            weight_decay=0.01,
-            logging_dir='./logs',
+            learning_rate=cfg.train.learning_rate,
+            weight_decay=cfg.train.weight_decay,
+            logging_dir='./training_logs',
             logging_steps=logging_steps,
             logging_first_step=True,
             load_best_model_at_end=True,
@@ -217,31 +203,35 @@ def train(args):
             callbacks=callbacks
         )
 
+        log.info("Starting trainer...")
         start_time = time.time()
         trainer.train()
         run_time = time.time() - start_time
 
         # test with ORIG data
-        out = trainer.evaluate(tokenized_datasets["test"])
+        out = trainer.evaluate(tokenized_datasets["test"].select(range(5)))
         out.update({
-            "run_num":          run_num,
-            "technique":        technique,
-            "model_checkpoint": model_checkpoint,
-            "checkpoint":       checkpoint,
-            "dataset_config":   args.dataset_config,
-            "train_size":       len(tokenized_datasets["train"]),
-            "valid_size":       len(tokenized_datasets["validation"]),
-            "test_size":        len(tokenized_datasets["test"]),
-            "run_time":         run_time,
+            "run_num":              run_num,
+            "technique":            technique,
+            "base_model":           base_model,
+            "trained_model":        output_dir,
+            "dataset.builder_name": cfg.dataset.builder_name,
+            "dataset.config_name":  cfg.dataset.config_name,
+            "train_size":           len(tokenized_datasets["train"]),
+            "valid_size":           len(tokenized_datasets["validation"]),
+            "test_size":            len(tokenized_datasets["test"]),
+            "run_time":             run_time,
         })
-        print('Performance of {}\n{}'.format(checkpoint, out))
-
+        log.info('Performance of {}\n{}'.format(output_dir, out))
         results.append(out)
 
-        # save results
+        log.info(f"Saving results to {cfg.train.save_path}")
         df = pd.DataFrame(results)
-        df.to_csv(save_file, index=False)
+        df.to_csv(cfg.train.save_path, index=False)
+
+        log.info(f"Saving fine-tuned model to {output_dir}")
+        trainer.save_model(output_dir)
 
 
 if __name__ == "__main__":
-    train(args)
+    train()
