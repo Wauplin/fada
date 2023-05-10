@@ -8,3 +8,5 @@ cleanlab
 
 # python -m spacy download en_core_web_sm
 # pip install git+https://github.com/boudinfl/pke.git
+# python -c "from textdiversity import AMR; AMR()"
+# textattack requires pycld2, which doesn't work in windows --> https://github.com/aboSamoor/pycld2/issues/24 --> https://www.lfd.uci.edu/~gohlke/pythonlibs/#pycld2 --> pycld2‑0.41‑cp38‑cp38‑win_amd64.whl --> pip install pycld2‑0.41‑cp38‑cp38‑win_amd64.whl

@@ -3,12 +3,13 @@ defaults:
     - transforms: sibyl
     - features: amr
 
-working_dir: "./fada/fadata/"
-amr_dir: "./fada/fadata/amrs/"
-dataset_dir: "./fada/fadata/datasets/"
-tfim_dir: "./fada/fadata/tfim/"
+working_dir: "./fada/fadata"
+dataset_dir: "${working_dir}/datasets"
+results_dir: "./eval/results"
 
 amr_extractor:
+    amr_dir: "${working_dir}/amrs"
+    amr_save_path: "${amr_extractor.amr_dir}/${dataset.builder_name}.${dataset.config_name}.pkl"
     max_sent_len: 64
     batch_size: 8
 
@@ -18,12 +19,13 @@ alignment_extractor:
 dataset:
     builder_name: "glue"
     config_name: "sst2"
-    text_key: "sentence"
+    text_key: "text"
     task_name: "sentiment"
     num_per_class: "infer" # 10, 200, 2500, "min", "infer"
     max_size: 100000
 
-fada:
+fada: 
+    tfim_dir: "${working_dir}/tfim"
     min_coverage: 128
     num_to_transform_per_step: 128
     max_iterations: 8
@@ -39,3 +41,35 @@ augment:
     batch_size: 8
     keep_originals: True
     force: False
+
+train:
+    num_runs: 3
+    dataset_matcher: "${dataset.builder_name}.${dataset.config_name}.*"
+    base_models: 
+        - "prajjwal1/bert-tiny"
+        - "bert-base-uncased"
+    num_epochs: 10
+    logging_steps_per_epoch: 10
+    early_stopping_patience: 10
+    gradient_accumulation_steps: 1
+    train_batch_size: 2
+    eval_batch_size: 16
+    learning_rate: 2e-5
+    weight_decay: 0.01
+    visible_cuda_devices: "0,1"
+    trained_models_dir: "./eval/pretrained"
+    save_path: "${results_dir}/${dataset.builder_name}.${dataset.config_name}.training.csv"
+
+robustness:
+    num_runs: 3
+    model_matcher: "${train.trained_models_dir}/*${dataset.builder_name}.${dataset.config_name}.*"
+    num_advs: 100
+    visible_cuda_devices: "0,1"
+    attacks: 
+        - textattack.attack_recipes.TextFoolerJin2019
+        - textattack.attack_recipes.DeepWordBugGao2018
+        - textattack.attack_recipes.TextBuggerLi2018
+        - textattack.attack_recipes.PSOZang2020
+        - textattack.attack_recipes.CheckList2020
+        - textattack.attack_recipes.BERTAttackLi2020
+    save_path: "${results_dir}/${dataset.builder_name}.${dataset.config_name}.robustness.csv"
