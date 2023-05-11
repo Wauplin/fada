@@ -215,7 +215,7 @@ def train(cfg: DictConfig) -> None:
         run_time = time.time() - start_time
 
         # test with ORIG data
-        out = trainer.evaluate(tokenized_datasets["test"].select(range(5)))
+        out = trainer.evaluate(tokenized_datasets["test"])
         out.update({
             "run_num":              run_num,
             "technique":            technique,
