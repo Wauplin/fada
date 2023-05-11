@@ -106,8 +106,8 @@ def train(cfg: DictConfig) -> None:
         raw_datasets = prepare_splits(raw_datasets)
         raw_datasets = rename_text_columns(raw_datasets)
         raw_datasets = raw_datasets.shuffle(seed=run_num)
-
-        num_labels = len(raw_datasets["train"].features["label"].names)
+        
+        num_labels = len(np.unique(raw_datasets["train"]["label"]))
         
         log.info("Loading prepared training dataset...")
         if technique != "orig":
