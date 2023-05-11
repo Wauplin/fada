@@ -116,7 +116,7 @@ class Augmenter:
             new_texts = batch['text'] + new_texts
             new_labels = batch['label'] + new_labels
             realized_batch_size = len(new_labels)
-            transforms_applied = transforms_applied + np.zeros((actual_batch_size, len(self.transforms)), dtype=np.int32).tolist()
+            transforms_applied = transforms_applied + np.zeros((actual_batch_size, len(self.transforms)), dtype=np.int64).tolist()
             is_changed = is_changed + [0] * actual_batch_size
             out = {
                 "text": new_texts, 
