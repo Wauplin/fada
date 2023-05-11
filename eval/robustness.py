@@ -171,81 +171,83 @@ def robustness(cfg: DictConfig) -> None:
             "num_adversaries":       cfg.robustness.num_advs,
         })
 
-        if loaded_checkpoint:
+        if not loaded_checkpoint:
+            log.warning(f"{fine_tuned_model_path} could not be loaded, skipping...")
+            continue
 
-            #############################################################
-            ## TextAttack ###############################################
-            #############################################################
+        #############################################################
+        ## AMR Feature Subpopulations ###############################
+        #############################################################
 
-            mw = CustomModelWrapper(model, tokenizer)
-            dataset = HuggingFaceDataset(dataset, shuffle=True)
-            attack_args = textattack.AttackArgs(
-                num_examples=cfg.robustness.num_advs, 
-                random_seed=run_num,
-                parallel=True,
-                num_workers_per_device=2,
-                disable_stdout=True)
+        log.info("Initializing PerformanceExtractor...")
+        perf_extractor = PerformanceExtractor(model=model, tokenizer=tokenizer)
 
-            for recipe in attack_recipes:
+        log.info("Annotating test dataset with output probabilities and predictions...")
+        dataset, preds = perf_extractor.annotate_preds(dataset)
 
-                attack = recipe.build(mw)
-                attacker = Attacker(attack, dataset, attack_args)
-                attack_results = attacker.attack_dataset()
+        log.info("Partitioning test dataset by feature...")
+        feature_partitions = partition_dataset_by_features(dataset)
 
-                num_results = 0
-                num_failures = 0
-                num_successes = 0
+        log.info("Computing performance metrics on feature subpopulations (partitions)...")
+        for id, feature_partition in enumerate(feature_partitions):
+            if feature_partition.num_rows > 0:
+                perfs = perf_extractor.compute_metrics(
+                    preds=feature_partition["preds"], 
+                    labels=feature_partition["label"])
+            else:
+                perfs = {
+                    "accuracy": -1.0,
+                    "precision": -1.0,
+                    "recall": -1.0,
+                    "f1": -1.0,
+                }
+            out[f"feature_id_{id}_accuracy"]  = perfs["accuracy"] 
+            out[f"feature_id_{id}_precision"] = perfs["precision"] 
+            out[f"feature_id_{id}_recall"]    = perfs["recall"] 
+            out[f"feature_id_{id}_f1"]        = perfs["f1"] 
+            out[f"feature_id_{id}_num_rows"]  = feature_partition.num_rows
 
-                for result in attack_results:                
-                    num_results += 1
-                    if (type(result) == textattack.attack_results.SuccessfulAttackResult or 
-                        type(result) == textattack.attack_results.MaximizedAttackResult):
-                        num_successes += 1
-                    else:
-                        num_failures += 1
+        #############################################################
+        ## TextAttack ###############################################
+        #############################################################
 
-                attack_success = num_successes / num_results
-                out[f"attack_success_{recipe.__name__}"] = attack_success
+        mw = CustomModelWrapper(model, tokenizer)
+        dataset = HuggingFaceDataset(dataset, shuffle=True)
+        attack_args = textattack.AttackArgs(
+            num_examples=cfg.robustness.num_advs, 
+            random_seed=run_num,
+            # parallel=True,
+            # num_workers_per_device=2,
+            disable_stdout=True)
 
-                print("{0} Attack Success: {1:0.2f}".format(recipe.__name__, attack_success))
+        for recipe in attack_recipes:
 
-            #############################################################
-            ## AMR Feature Subpopulations ###############################
-            #############################################################
+            attack = recipe.build(mw)
+            attacker = Attacker(attack, dataset, attack_args)
+            attack_results = attacker.attack_dataset()
 
-            log.info("Initializing PerformanceExtractor...")
-            perf_extractor = PerformanceExtractor(model=model, tokenizer=tokenizer)
+            num_results = 0
+            num_failures = 0
+            num_successes = 0
 
-            log.info("Annotating test dataset with output probabilities and predictions...")
-            dataset, preds = perf_extractor.annotate_preds(dataset)
-
-            log.info("Partitioning test dataset by feature...")
-            feature_partitions = partition_dataset_by_features(dataset)
-
-            log.info("Computing performance metrics on feature subpopulations (partitions)...")
-            for id, feature_partition in enumerate(feature_partitions):
-                if feature_partition.num_rows > 0:
-                    perfs = perf_extractor.compute_metrics(
-                        preds=feature_partition["preds"], 
-                        labels=feature_partition["label"])
+            for result in attack_results:                
+                num_results += 1
+                if (type(result) == textattack.attack_results.SuccessfulAttackResult or 
+                    type(result) == textattack.attack_results.MaximizedAttackResult):
+                    num_successes += 1
                 else:
-                    perfs = {
-                        "accuracy": -1.0,
-                        "precision": -1.0,
-                        "recall": -1.0,
-                        "f1": -1.0,
-                    }
-                out[f"feature_id_{id}_accuracy"]  = perfs["accuracy"] 
-                out[f"feature_id_{id}_precision"] = perfs["precision"] 
-                out[f"feature_id_{id}_recall"]    = perfs["recall"] 
-                out[f"feature_id_{id}_f1"]        = perfs["f1"] 
-                out[f"feature_id_{id}_num_rows"]  = feature_partition.num_rows
+                    num_failures += 1
 
-            results.append(out)
+            attack_success = num_successes / num_results
+            out[f"attack_success_{recipe.__name__}"] = attack_success
 
-            log.info(f"Saving results to {cfg.robustness.save_path}")
-            df = pd.DataFrame(results)
-            df.to_csv(cfg.robustness.save_path, index=False)
+            print("{0} Attack Success: {1:0.2f}".format(recipe.__name__, attack_success))
+
+        results.append(out)
+
+        log.info(f"Saving results to {cfg.robustness.save_path}")
+        df = pd.DataFrame(results)
+        df.to_csv(cfg.robustness.save_path, index=False)
 
 if __name__ == "__main__":
     robustness()
