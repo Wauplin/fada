@@ -18,9 +18,10 @@ from datasets import load_dataset
 
 from sibyl import *
 from fada.utils import *
-from fada.extractors import AMRFeatureExtractor
+from fada.extractors import AMRFeatureExtractor, PerformanceExtractor
+from fada.filters import partition_dataset_by_features
 
-# https://www.gitmemory.com/issue/QData/TextAttack/424/795806095
+torch.use_deterministic_algorithms(False)
 
 def load_class(module_class_str):
     parts = module_class_str.split(".")
@@ -52,6 +53,10 @@ class CustomModelWrapper(ModelWrapper):
 @hydra.main(version_base=None, config_path="../fada/conf", config_name="config")
 def robustness(cfg: DictConfig) -> None:
 
+    #############################################################
+    ## Initializations ##########################################
+    #############################################################
+
     log = logging.getLogger(__name__)
 
     log.info("Starting robustness evaluation...")
@@ -66,12 +71,17 @@ def robustness(cfg: DictConfig) -> None:
         device = torch.device('cuda')
     log.info(f"training on device={device}")
 
+    log.info("Loading attacks from config...")
+    attack_recipes = [load_class(a) for a in cfg.robustness.attacks]
+    attack_recipes = sorted(attack_recipes, key=lambda a: a.__name__)
+    log.info(f"Attacks loaded: {','.join([a.__name__ for a in attack_recipes])}")
+
     #############################################################
     ## Search for pretrained models #############################
     #############################################################
 
-    model_paths = glob.glob(cfg.robustness.model_matcher)
-    fine_tuned_models = [m.split("\\")[-1] for m in model_paths]
+    log.info(f"Using matcher to find models for robustness eval:\n{cfg.robustness.model_matcher}")
+    fine_tuned_model_paths = glob.glob(cfg.robustness.model_matcher)
 
     #############################################################
     ## Prepare training iterations ##############################
@@ -79,10 +89,10 @@ def robustness(cfg: DictConfig) -> None:
 
     run_args = []
     for run_num in range(cfg.robustness.num_runs):
-        for model in fine_tuned_models:
+        for fine_tuned_model_path in fine_tuned_model_paths:
             run_args.append({
                 "run_num":run_num,
-                "fine_tuned_model": model,
+                "fine_tuned_model_path": fine_tuned_model_path,
             })
 
     log.info(run_args)
@@ -94,14 +104,15 @@ def robustness(cfg: DictConfig) -> None:
     else:
         start_position = 0
 
-    log.info('starting at position {}'.format(start_position))
+    log.info('Starting at position {}'.format(start_position))
     for run_arg in run_args[start_position:]:
         
         #############################################################
         ## Initializations ##########################################
         #############################################################
         run_num = run_arg['run_num']
-        trained_model = run_arg['fine_tuned_model']
+        fine_tuned_model_path = run_arg['fine_tuned_model_path']
+        fine_tuned_model_name = fine_tuned_model_path.split("\\")[-1]
 
         log.info(pd.DataFrame([run_arg]))
 
@@ -142,33 +153,40 @@ def robustness(cfg: DictConfig) -> None:
 
         log.info("Loading model...")
         loaded_checkpoint = False
-        if os.path.exists(trained_model):
-            tokenizer = AutoTokenizer.from_pretrained(trained_model, local_files_only=True)
-            model = AutoModelForSequenceClassification.from_pretrained(trained_model).to(device)
+        if os.path.exists(fine_tuned_model_path):
+            tokenizer = AutoTokenizer.from_pretrained(fine_tuned_model_path, local_files_only=True)
+            model = AutoModelForSequenceClassification.from_pretrained(fine_tuned_model_path).to(device)
             loaded_checkpoint = True
 
-        return 
-
         #############################################################
-        ## TextAttacks ##############################################
+        ## Robustness Evaluations ###################################
         #############################################################
 
         out = {}
         out.update({
-            "run_num":              run_num,
-            "trained_model":        trained_model,
-            "dataset.builder_name": cfg.dataset.builder_name,
-            "dataset.config_name":  cfg.dataset.config_name,
-            "num_adversaries":      cfg.num_adversaries,
+            "run_num":               run_num,
+            "fine_tuned_model_name": fine_tuned_model_name,
+            "dataset.builder_name":  cfg.dataset.builder_name,
+            "dataset.config_name":   cfg.dataset.config_name,
+            "num_adversaries":       cfg.robustness.num_advs,
         })
 
         if loaded_checkpoint:
 
+            #############################################################
+            ## TextAttack ###############################################
+            #############################################################
+
             mw = CustomModelWrapper(model, tokenizer)
             dataset = HuggingFaceDataset(dataset, shuffle=True)
-            attack_args = textattack.AttackArgs(num_examples=cfg.num_advs, disable_stdout=True)
+            attack_args = textattack.AttackArgs(
+                num_examples=cfg.robustness.num_advs, 
+                random_seed=run_num,
+                parallel=True,
+                num_workers_per_device=2,
+                disable_stdout=True)
 
-            for recipe in recipes:
+            for recipe in attack_recipes:
 
                 attack = recipe.build(mw)
                 attacker = Attacker(attack, dataset, attack_args)
@@ -183,20 +201,51 @@ def robustness(cfg: DictConfig) -> None:
                     if (type(result) == textattack.attack_results.SuccessfulAttackResult or 
                         type(result) == textattack.attack_results.MaximizedAttackResult):
                         num_successes += 1
-                    if type(result) == textattack.attack_results.FailedAttackResult:
+                    else:
                         num_failures += 1
 
                 attack_success = num_successes / num_results
-                out['attack_success_' + recipe.__name__] = attack_success
+                out[f"attack_success_{recipe.__name__}"] = attack_success
 
                 print("{0} Attack Success: {1:0.2f}".format(recipe.__name__, attack_success))
 
-        results.append(out)
+            #############################################################
+            ## AMR Feature Subpopulations ###############################
+            #############################################################
 
-        # save results
-        df = pd.DataFrame(results)
-        df.to_csv(cfg.robustness.save_path, index=False)
+            log.info("Initializing PerformanceExtractor...")
+            perf_extractor = PerformanceExtractor(model=model, tokenizer=tokenizer)
 
+            log.info("Annotating test dataset with output probabilities and predictions...")
+            dataset, preds = perf_extractor.annotate_preds(dataset)
+
+            log.info("Partitioning test dataset by feature...")
+            feature_partitions = partition_dataset_by_features(dataset)
+
+            log.info("Computing performance metrics on feature subpopulations (partitions)...")
+            for id, feature_partition in enumerate(feature_partitions):
+                if feature_partition.num_rows > 0:
+                    perfs = perf_extractor.compute_metrics(
+                        preds=feature_partition["preds"], 
+                        labels=feature_partition["label"])
+                else:
+                    perfs = {
+                        "accuracy": -1.0,
+                        "precision": -1.0,
+                        "recall": -1.0,
+                        "f1": -1.0,
+                    }
+                out[f"feature_id_{id}_accuracy"]  = perfs["accuracy"] 
+                out[f"feature_id_{id}_precision"] = perfs["precision"] 
+                out[f"feature_id_{id}_recall"]    = perfs["recall"] 
+                out[f"feature_id_{id}_f1"]        = perfs["f1"] 
+                out[f"feature_id_{id}_num_rows"]  = feature_partition.num_rows
+
+            results.append(out)
+
+            log.info(f"Saving results to {cfg.robustness.save_path}")
+            df = pd.DataFrame(results)
+            df.to_csv(cfg.robustness.save_path, index=False)
 
 if __name__ == "__main__":
     robustness()
