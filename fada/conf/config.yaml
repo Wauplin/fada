@@ -43,7 +43,7 @@ augment:
     force: False
 
 train:
-    num_runs: 3
+    num_runs: 1
     dataset_matcher: "${dataset.builder_name}.${dataset.config_name}.*"
     base_models: 
         - "prajjwal1/bert-tiny"
@@ -61,15 +61,14 @@ train:
     save_path: "${results_dir}/${dataset.builder_name}.${dataset.config_name}.training.csv"
 
 robustness:
-    num_runs: 3
+    num_runs: 1
     model_matcher: "${train.trained_models_dir}/*${dataset.builder_name}.${dataset.config_name}.*"
     num_advs: 100
     visible_cuda_devices: "0,1"
     attacks: 
-        - textattack.attack_recipes.TextFoolerJin2019
-        - textattack.attack_recipes.DeepWordBugGao2018
-        - textattack.attack_recipes.TextBuggerLi2018
-        - textattack.attack_recipes.PSOZang2020
-        - textattack.attack_recipes.CheckList2020
-        - textattack.attack_recipes.BERTAttackLi2020
+        # - textattack.attack_recipes.BERTAttackLi2020 # 120 min / 100 examples
+        # - textattack.attack_recipes.CheckList2020 # 15 min / 100 examples
+        # - textattack.attack_recipes.DeepWordBugGao2018 # 15 min / 100 examples
+        # - textattack.attack_recipes.TextBuggerLi2018 # 15 min / 100 examples
+        - textattack.attack_recipes.TextFoolerJin2019 # 15 min / 100 examples
     save_path: "${results_dir}/${dataset.builder_name}.${dataset.config_name}.robustness.csv"
