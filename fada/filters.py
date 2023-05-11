@@ -6,16 +6,22 @@ from datasets import concatenate_datasets
 from huggingface_hub import HfApi, ModelFilter
 from cleanlab.filter import find_label_issues
 
+def partition_dataset_by_features(dataset):
+    num_features = len(dataset[0]["features"])
+    feature_partitions = []
+    for i in range(num_features):
+        feature_partition = dataset.filter(lambda row: i in np.nonzero(row["features"])[0])
+        feature_partitions.append(feature_partition)
+    return feature_partitions
+
 def partition_dataset_by_class(dataset):
     classes = np.unique(dataset['label'])
     num_classes = len(classes)
-
     class_partitions = []
     for i in range(num_classes):
         class_partition = dataset.filter(lambda row: row["label"] == i)
         class_partitions.append(class_partition)
     return class_partitions
-
 
 def balance_dataset(dataset, num_per_class=100):
     # partition dataset by class
