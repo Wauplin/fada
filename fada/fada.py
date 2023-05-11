@@ -351,6 +351,7 @@ def fada_augment(cfg: DictConfig) -> None:
             aug_dataset.save_to_disk(save_path)
             torch.cuda.empty_cache()
             log.info(f"uniform augmented dataset saved @ {save_path}!")
+            log.info(aug_dataset[0])
             
             log.info("Starting fada augs...")
 
@@ -381,6 +382,7 @@ def fada_augment(cfg: DictConfig) -> None:
                 aug_dataset.save_to_disk(save_path)
                 torch.cuda.empty_cache()
                 log.info(f"fada augmented dataset saved @ {save_path}!")
+                log.info(aug_dataset[0])
     
     log.info(f"{cfg.augment.technique} augmented dataset completed!")
 
