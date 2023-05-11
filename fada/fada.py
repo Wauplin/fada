@@ -223,7 +223,8 @@ def fada_augment(cfg: DictConfig) -> None:
     transforms = [Transform(t, task_name=cfg.dataset.task_name) for t in transforms]
     
     log.info("Loading dataset...")
-    annotated_dataset_path = f"{cfg.dataset_dir}{cfg.dataset.builder_name}.{cfg.dataset.config_name}.annotated"
+    annotated_dataset_path = os.path.join(cfg.dataset_dir, f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.annotated")
+    print(annotated_dataset_path)
     if os.path.exists(annotated_dataset_path):
         dataset = load_from_disk(annotated_dataset_path)
         features = np.array(dataset["features"])
