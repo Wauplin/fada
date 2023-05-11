@@ -55,7 +55,8 @@ def train(cfg: DictConfig) -> None:
     #############################################################
 
     dataset_paths = glob.glob(os.path.join(cfg.dataset_dir, cfg.train.dataset_matcher))
-    dataset_techniques = [p.split("\\")[-1] for p in dataset_paths]
+    dataset_paths = [p.replace("\\", "/") for p in dataset_paths] # fix for formatting issues in windows
+    dataset_techniques = [p.split("/")[-1] for p in dataset_paths]
 
     #############################################################
     ## Prepare training iterations ##############################
@@ -114,6 +115,9 @@ def train(cfg: DictConfig) -> None:
             save_path = os.path.join(cfg.dataset_dir, technique)
             train_dataset = load_from_disk(save_path)
             raw_datasets["train"] = train_dataset
+
+        if len(raw_datasets["validation"]) > cfg.train.max_val_size:
+            raw_datasets["validation"] = raw_datasets["validation"].select(cfg.train.max_val_size)
 
         log.info(raw_datasets)
         log.info(f"Number of classes: {num_labels}")
