@@ -1,9 +1,9 @@
 # sst2 
 python -m fada.fada_search dataset.builder_name=glue dataset.config_name=sst2 dataset.text_key=sentence dataset.task_name=sentiment amr_extractor.max_sent_len=64 amr_extractor.batch_size=8 alignment_extractor.model_id=distilbert-base-uncased-finetuned-sst-2-english
 
-python -m fada.fada_augment dataset.builder_name=glue dataset.config_name=sst2 dataset.task_name=sentiment augment.technique=all dataset.max_size=0 dataset.num_per_class=10
-python -m fada.fada_augment dataset.builder_name=glue dataset.config_name=sst2 dataset.task_name=sentiment augment.technique=all dataset.max_size=0 dataset.num_per_class=200
-python -m fada.fada_augment dataset.builder_name=glue dataset.config_name=sst2 dataset.task_name=sentiment augment.technique=all dataset.max_size=0 dataset.num_per_class=2500
+python -m fada.fada_augment dataset.builder_name=glue dataset.config_name=sst2 dataset.task_name=sentiment augment.technique=all dataset.num_per_class=10
+python -m fada.fada_augment dataset.builder_name=glue dataset.config_name=sst2 dataset.task_name=sentiment augment.technique=all dataset.num_per_class=200
+python -m fada.fada_augment dataset.builder_name=glue dataset.config_name=sst2 dataset.task_name=sentiment augment.technique=all dataset.num_per_class=2500
 
 python -m eval.train dataset.builder_name=glue dataset.config_name=sst2
 
@@ -12,9 +12,9 @@ python -m eval.robustness dataset.builder_name=glue dataset.config_name=sst2
 # imdb 
 python -m fada.fada_search dataset.builder_name=imdb dataset.config_name=plain_text dataset.text_key=text dataset.task_name=sentiment amr_extractor.max_sent_len=512 amr_extractor.batch_size=1 alignment_extractor.model_id=textattack/bert-base-uncased-imdb
 
-python -m fada.fada_augment dataset.builder_name=imdb dataset.config_name=plain_text dataset.task_name=sentiment augment.technique=all dataset.max_size=0 dataset.num_per_class=10
-python -m fada.fada_augment dataset.builder_name=imdb dataset.config_name=plain_text dataset.task_name=sentiment augment.technique=all dataset.max_size=0 dataset.num_per_class=200
-python -m fada.fada_augment dataset.builder_name=imdb dataset.config_name=plain_text dataset.task_name=sentiment augment.technique=all dataset.max_size=0 dataset.num_per_class=2500
+python -m fada.fada_augment dataset.builder_name=imdb dataset.config_name=plain_text dataset.task_name=sentiment augment.technique=all dataset.num_per_class=10
+python -m fada.fada_augment dataset.builder_name=imdb dataset.config_name=plain_text dataset.task_name=sentiment augment.technique=all dataset.num_per_class=200
+python -m fada.fada_augment dataset.builder_name=imdb dataset.config_name=plain_text dataset.task_name=sentiment augment.technique=all dataset.num_per_class=2500
 
 python -m eval.train dataset.builder_name=imdb dataset.config_name=plain_text
 
@@ -23,20 +23,20 @@ python -m eval.robustness dataset.builder_name=imdb dataset.config_name=plain_te
 # ag_news 
 python -m fada.fada_search dataset.builder_name=ag_news dataset.config_name=default dataset.text_key=text dataset.task_name=topic amr_extractor.max_sent_len=64 amr_extractor.batch_size=8 alignment_extractor.model_id=textattack/bert-base-uncased-ag-news
 
-python -m fada.fada_augment dataset.builder_name=ag_news dataset.config_name=default dataset.task_name=sentiment augment.technique=all dataset.max_size=0 dataset.num_per_class=10
-python -m fada.fada_augment dataset.builder_name=ag_news dataset.config_name=default dataset.task_name=sentiment augment.technique=all dataset.max_size=0 dataset.num_per_class=200
-python -m fada.fada_augment dataset.builder_name=ag_news dataset.config_name=default dataset.task_name=sentiment augment.technique=all dataset.max_size=0 dataset.num_per_class=2500
+python -m fada.fada_augment dataset.builder_name=ag_news dataset.config_name=default dataset.task_name=sentiment augment.technique=all dataset.num_per_class=10
+python -m fada.fada_augment dataset.builder_name=ag_news dataset.config_name=default dataset.task_name=sentiment augment.technique=all dataset.num_per_class=200
+python -m fada.fada_augment dataset.builder_name=ag_news dataset.config_name=default dataset.task_name=sentiment augment.technique=all dataset.num_per_class=2500
 
 python -m eval.train dataset.builder_name=ag_news dataset.config_name=default
 
 python -m eval.robustness dataset.builder_name=ag_news dataset.config_name=default
 
 # yahoo_answers_topics 
-python -m fada.fada_search dataset.builder_name=yahoo_answers_topics dataset.config_name=yahoo_answers_topics dataset.text_key=text dataset.task_name=topic amr_extractor.max_sent_len=128 amr_extractor.batch_size=4 alignment_extractor.model_id=fabriceyhc/bert-base-uncased-yahoo_answers_topics
+python -m fada.fada_search dataset.builder_name=yahoo_answers_topics dataset.config_name=yahoo_answers_topics dataset.text_key=text dataset.task_name=topic amr_extractor.max_sent_len=128 amr_extractor.batch_size=4 alignment_extractor.model_id=fabriceyhc/bert-base-uncased-yahoo_answers_topics dataset.max_size=80000
 
-python -m fada.fada_augment dataset.builder_name=yahoo_answers_topics dataset.config_name=yahoo_answers_topics dataset.task_name=sentiment augment.technique=all dataset.max_size=0 dataset.num_per_class=10
-python -m fada.fada_augment dataset.builder_name=yahoo_answers_topics dataset.config_name=yahoo_answers_topics dataset.task_name=sentiment augment.technique=all dataset.max_size=0 dataset.num_per_class=200
-python -m fada.fada_augment dataset.builder_name=yahoo_answers_topics dataset.config_name=yahoo_answers_topics dataset.task_name=sentiment augment.technique=all dataset.max_size=0 dataset.num_per_class=2500
+python -m fada.fada_augment dataset.builder_name=yahoo_answers_topics dataset.config_name=yahoo_answers_topics dataset.task_name=sentiment augment.technique=all dataset.num_per_class=10
+python -m fada.fada_augment dataset.builder_name=yahoo_answers_topics dataset.config_name=yahoo_answers_topics dataset.task_name=sentiment augment.technique=all dataset.num_per_class=200
+python -m fada.fada_augment dataset.builder_name=yahoo_answers_topics dataset.config_name=yahoo_answers_topics dataset.task_name=sentiment augment.technique=all dataset.num_per_class=2500
 
 python -m eval.train dataset.builder_name=yahoo_answers_topics dataset.config_name=yahoo_answers_topics
 
