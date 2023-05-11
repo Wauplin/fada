@@ -23,6 +23,7 @@ import hydra
 from omegaconf import DictConfig, OmegaConf
 
 from fada.utils import *
+from fada.filters import balance_dataset
 
 random.seed(130)
 torch.use_deterministic_algorithms(False)
@@ -117,7 +118,9 @@ def train(cfg: DictConfig) -> None:
             raw_datasets["train"] = train_dataset
 
         if len(raw_datasets["validation"]) > cfg.train.max_val_size:
-            raw_datasets["validation"] = raw_datasets["validation"].select(cfg.train.max_val_size)
+            log.info("Triming down validation dataset...")
+            num_per_class = cfg.train.max_val_size // num_labels
+            raw_datasets["validation"] = balance_dataset(raw_datasets["validation"], num_per_class)
 
         log.info(raw_datasets)
         log.info(f"Number of classes: {num_labels}")
