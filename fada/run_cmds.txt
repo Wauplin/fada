@@ -18,6 +18,10 @@ python -m fada.fada dataset.builder_name=yahoo_answers_topics dataset.config_nam
 python -m fada.fada dataset.builder_name=yahoo_answers_topics dataset.config_name=yahoo_answers_topics dataset.task_name=topic amr_extractor.max_sent_len=128 amr_extractor.batch_size=4 alignment_extractor.model_id=fabriceyhc/bert-base-uncased-yahoo_answers_topics augment.technique=all dataset.max_size=0 dataset.num_per_class=200
 python -m fada.fada dataset.builder_name=yahoo_answers_topics dataset.config_name=yahoo_answers_topics dataset.task_name=topic amr_extractor.max_sent_len=128 amr_extractor.batch_size=4 alignment_extractor.model_id=fabriceyhc/bert-base-uncased-yahoo_answers_topics augment.technique=all dataset.max_size=0 dataset.num_per_class=2500
 
+# sst2 - train + eval robustness
+python -m eval.train dataset.builder_name=glue dataset.config_name=sst2
+python -m eval.robustness dataset.builder_name=glue dataset.config_name=sst2
+
 # ag_news - train + eval robustness
 python -m eval.train dataset.builder_name=ag_news dataset.config_name=default
 python -m eval.robustness dataset.builder_name=ag_news dataset.config_name=default
@@ -25,3 +29,7 @@ python -m eval.robustness dataset.builder_name=ag_news dataset.config_name=defau
 # imdb - train + eval robustness
 python -m eval.train dataset.builder_name=imdb dataset.config_name=plain_text
 python -m eval.robustness dataset.builder_name=imdb dataset.config_name=plain_text
+
+# yahoo_answers_topics - train + eval robustness
+python -m eval.train dataset.builder_name=yahoo_answers_topics dataset.config_name=yahoo_answers_topics
+python -m eval.robustness dataset.builder_name=yahoo_answers_topics dataset.config_name=yahoo_answers_topics
