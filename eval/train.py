@@ -47,7 +47,7 @@ def train(cfg: DictConfig) -> None:
 
     device = torch.device('cpu')
     if torch.cuda.is_available():
-        os.environ["CUDA_VISIBLE_DEVICES"] = cfg.train.visible_cuda_devices
+        os.environ["CUDA_VISIBLE_DEVICES"] = str(cfg.train.visible_cuda_devices)
         device = torch.device('cuda')
     log.info(f"training on device={device}")
 
