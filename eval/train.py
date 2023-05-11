@@ -175,7 +175,6 @@ def train(cfg: DictConfig) -> None:
             max_steps=max_steps,
             save_steps=logging_steps,
             save_total_limit=1,
-            save_strategy = "no",
             per_device_train_batch_size=cfg.train.train_batch_size,
             per_device_eval_batch_size=cfg.train.eval_batch_size,
             gradient_accumulation_steps=cfg.train.gradient_accumulation_steps, 
