@@ -61,17 +61,21 @@ def fada_augment(cfg: DictConfig) -> None:
         keep_cols = ['text', 'label', 'idx']
         dataset = dataset.remove_columns([c for c in dataset.features.keys() if c not in keep_cols])
 
-    if dataset.num_rows > cfg.dataset.max_size:
-        log.info(f"Dataset size is larger than dataset.max_size={cfg.dataset.max_size}")
-        if str(cfg.dataset.num_per_class) == "infer":
-            num_labels = len(np.unique(dataset['label']))
-            num_per_class = int(cfg.dataset.max_size / num_labels)
-        else:
+    dataset_needs_balancing = False
+    if isinstance(cfg.dataset.num_per_class, int):
+        if cfg.dataset.num_per_class > 0:
             num_per_class = cfg.dataset.num_per_class
+            dataset_needs_balancing = True
+    elif str(cfg.dataset.num_per_class) == "infer" and dataset.num_rows > cfg.dataset.max_size:
+        num_labels = len(np.unique(dataset['label']))
+        num_per_class = int(cfg.dataset.max_size / num_labels)
+        dataset_needs_balancing = True
+
+    if dataset_needs_balancing:
         log.info(f"Balancing dataset with num_per_class={num_per_class}")
         dataset = balance_dataset(dataset, num_per_class=num_per_class)
         log.info(dataset)
-
+    
     log.info(f"Constructing original (unaugmented) dataset...")
     save_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.original.{cfg.dataset.num_per_class}"
     save_path = os.path.join(cfg.dataset_dir, save_name)
