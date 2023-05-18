@@ -84,6 +84,37 @@ def robustness(cfg: DictConfig) -> None:
     fine_tuned_model_paths = glob.glob(cfg.robustness.model_matcher)
 
     #############################################################
+    ## Dataset Preparation ######################################
+    #############################################################
+
+    annotated_dataset_path = os.path.join(cfg.dataset_dir, 
+        f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.annotated.test")
+    if os.path.exists(annotated_dataset_path):
+        log.info(f"Found existing feature annotated test dataset @ {annotated_dataset_path}!")
+        dataset = load_from_disk(annotated_dataset_path)
+    else:
+        log.info(f"Could not find existing test dataset with feature annotations, generating one and saving @ {annotated_dataset_path}!\nThis may take a while...")
+        raw_datasets = load_dataset(cfg.dataset.builder_name, 
+                                    cfg.dataset.config_name)        
+        if 'sst2' in cfg.dataset.config_name:
+            raw_datasets.pop("test") # test set is not usable (all labels -1)
+        raw_datasets = prepare_splits(raw_datasets)
+        raw_datasets = rename_text_columns(raw_datasets)
+        raw_datasets = raw_datasets.shuffle(seed=run_num)
+        dataset = raw_datasets["test"]
+        if cfg.dataset.text_key != "text" and cfg.dataset.text_key in dataset.features.keys():
+            dataset = dataset.rename_column(cfg.dataset.text_key, "text")
+        feature_extractor = AMRFeatureExtractor(
+            amr_save_path=cfg.amr_extractor.amr_save_path,
+            max_sent_len=cfg.amr_extractor.max_sent_len, 
+            batch_size=cfg.amr_extractor.batch_size)
+        features = feature_extractor(dataset["text"])
+        dataset = dataset.add_column("features", [f for f in features])
+        dataset.save_to_disk(annotated_dataset_path)
+    
+    log.info(dataset)
+
+    #############################################################
     ## Prepare training iterations ##############################
     #############################################################
 
@@ -115,37 +146,6 @@ def robustness(cfg: DictConfig) -> None:
         fine_tuned_model_name = fine_tuned_model_path.split("\\")[-1]
 
         log.info(pd.DataFrame([run_arg]))
-
-        #############################################################
-        ## Dataset Preparation ######################################
-        #############################################################
-
-        annotated_dataset_path = os.path.join(cfg.dataset_dir, 
-            f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.annotated.test")
-        if os.path.exists(annotated_dataset_path):
-            log.info(f"Found existing feature annotated test dataset @ {annotated_dataset_path}!")
-            dataset = load_from_disk(annotated_dataset_path)
-        else:
-            log.info(f"Could not find existing test dataset with feature annotations, generating one and saving @ {annotated_dataset_path}!\nThis may take a while...")
-            raw_datasets = load_dataset(cfg.dataset.builder_name, 
-                                        cfg.dataset.config_name)        
-            if 'sst2' in cfg.dataset.config_name:
-                raw_datasets.pop("test") # test set is not usable (all labels -1)
-            raw_datasets = prepare_splits(raw_datasets)
-            raw_datasets = rename_text_columns(raw_datasets)
-            raw_datasets = raw_datasets.shuffle(seed=run_num)
-            dataset = raw_datasets["test"]
-            if cfg.dataset.text_key != "text" and cfg.dataset.text_key in dataset.features.keys():
-                dataset = dataset.rename_column(cfg.dataset.text_key, "text")
-            feature_extractor = AMRFeatureExtractor(
-                amr_save_path=cfg.amr_extractor.amr_save_path,
-                max_sent_len=cfg.amr_extractor.max_sent_len, 
-                batch_size=cfg.amr_extractor.batch_size)
-            features = feature_extractor(dataset["text"])
-            dataset = dataset.add_column("features", [f for f in features])
-            dataset.save_to_disk(annotated_dataset_path)
-        
-        log.info(dataset)
          
         #############################################################
         ## Model + Tokenizer ########################################
