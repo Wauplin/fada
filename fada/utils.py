@@ -3,8 +3,16 @@ import numpy as np
 import torch
 import seaborn as sns
 import matplotlib.pyplot as plt
+import importlib
 
 # helper functions
+
+def load_class(module_class_str):
+    parts = module_class_str.split(".")
+    module_name = ".".join(parts[:-1])
+    class_name = parts[-1]
+    cls = getattr(importlib.import_module(module_name), class_name)
+    return cls
 
 def normalize_minmax(df):
     for column in df.columns:
@@ -106,7 +114,7 @@ def prepare_splits(dataset_dict, train_val_split = 0.9, val_test_split = 0.5, se
 
     return dataset_dict
 
-def rename_text_columns(dataset_dict):
+def rename_text_columns(dataset_dict, remove_unused=True):
     text_columns = ["sentence"]
     val_columns = ["val", "valid"]
     for split_name, dataset in dataset_dict.items():
@@ -121,6 +129,9 @@ def rename_text_columns(dataset_dict):
                 dataset_dict[split_name] = dataset.rename_column(column, "text")
             if column in val_columns:
                 dataset_dict[split_name] = dataset.rename_column(column, "validation")
+        if remove_unused:
+            keep_cols = ['text', 'label', 'idx']
+            dataset_dict[split_name] = dataset.remove_columns([c for c in dataset.features.keys() if c not in keep_cols])
     return dataset_dict
 
 class ConfiguredMetric:

@@ -1,7 +1,6 @@
 from datasets import load_dataset, load_from_disk
 import os
 import glob
-import importlib
 import logging
 import torch
 import pandas as pd
@@ -22,13 +21,6 @@ from fada.extractors import AMRFeatureExtractor, PerformanceExtractor
 from fada.filters import partition_dataset_by_features
 
 torch.use_deterministic_algorithms(False)
-
-def load_class(module_class_str):
-    parts = module_class_str.split(".")
-    module_name = ".".join(parts[:-1])
-    class_name = parts[-1]
-    cls = getattr(importlib.import_module(module_name), class_name)
-    return cls
 
 class CustomModelWrapper(ModelWrapper):
     def __init__(self, model, tokenizer, batch_size=4):
