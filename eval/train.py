@@ -107,6 +107,7 @@ def train(cfg: DictConfig) -> None:
         log.info("Preparing datasets splits...")
         raw_datasets = prepare_splits(raw_datasets)
         raw_datasets = rename_text_columns(raw_datasets)
+        raw_datasets = remove_unused_columns(raw_datasets)
         raw_datasets = raw_datasets.shuffle(seed=run_num)
         
         num_labels = len(np.unique(raw_datasets["train"]["label"]))
