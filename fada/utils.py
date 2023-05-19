@@ -129,9 +129,12 @@ def rename_text_columns(dataset_dict, remove_unused=True):
                 dataset_dict[split_name] = dataset.rename_column(column, "text")
             if column in val_columns:
                 dataset_dict[split_name] = dataset.rename_column(column, "validation")
-        if remove_unused:
-            keep_cols = ['text', 'label', 'idx']
-            dataset_dict[split_name] = dataset.remove_columns([c for c in dataset.features.keys() if c not in keep_cols])
+    return dataset_dict
+
+def remove_unused_columns(dataset_dict):
+    keep_cols = ['text', 'label', 'idx', 'id']
+    for split_name, dataset in dataset_dict.items():
+        dataset_dict[split_name] = dataset.remove_columns([c for c in dataset.features.keys() if c not in keep_cols])
     return dataset_dict
 
 class ConfiguredMetric:
