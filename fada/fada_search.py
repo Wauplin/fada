@@ -20,18 +20,12 @@ from fada.extractors import (
 )
 from fada.augmenter import Augmenter
 from fada.utils import (
+    load_class,
     policy_heatmap, 
     prepare_splits,
     rename_text_columns
 )
 from fada.filters import balance_dataset
-
-def load_class(module_class_str):
-    parts = module_class_str.split(".")
-    module_name = ".".join(parts[:-1])
-    class_name = parts[-1]
-    cls = getattr(importlib.import_module(module_name), class_name)
-    return cls
 
 log = logging.getLogger(__name__)
 torch.use_deterministic_algorithms(False)
