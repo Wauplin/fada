@@ -14,3 +14,10 @@ tensorflow_hub
 # python -c "from textdiversity import AMR; AMR()"
 # textattack requires pycld2, which doesn't work in windows --> https://github.com/aboSamoor/pycld2/issues/24 --> https://www.lfd.uci.edu/~gohlke/pythonlibs/#pycld2 --> pycld2‑0.41‑cp38‑cp38‑win_amd64.whl --> pip install pycld2‑0.41‑cp38‑cp38‑win_amd64.whl
 # after installing text attack, may get this error "KeyError: 'length'" --> pip install --upgrade datasets
+
+# # When creating a new transformation, replace this with your forked repository (see below)
+# git clone https://github.com/GEM-benchmark/NL-Augmenter.git
+# cd NL-Augmenter
+# python setup.py sdist
+# pip install -e .
+# pip install https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.0.0/en_core_web_sm-3.0.0.tar.gz
