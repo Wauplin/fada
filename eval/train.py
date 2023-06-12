@@ -173,7 +173,7 @@ def train(cfg: DictConfig) -> None:
         ## Training  ################################################
         #############################################################
 
-        base_model_rename = base_model.replace("\\", ".")
+        base_model_rename = base_model.replace("\\", ".").replace("/", ".")
         output_dir = os.path.join(cfg.train.trained_models_dir, f"{base_model_rename}.{technique}")
 
         max_steps = (len(tokenized_datasets["train"]) * cfg.train.num_epochs // cfg.train.gradient_accumulation_steps) // cfg.train.train_batch_size
