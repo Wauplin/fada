@@ -168,3 +168,13 @@ def compare_policy_probs(policy_probs, augmented_dataset):
     df.columns = ["policy", "actual"]
     df["difference"] = df["policy"] - df["actual"]
     return df
+
+def repeat_array(arr_a, arr_b):
+    if len(arr_a) > len(arr_b):
+        num_repeats = len(arr_a) // len(arr_b)
+        remainder = len(arr_a) % len(arr_b)
+        repeated_arr_b = np.tile(arr_b, num_repeats)
+        repeated_arr_b = np.concatenate((repeated_arr_b, arr_b[:remainder]))
+        return repeated_arr_b
+    else:
+        return arr_b

@@ -1,6 +1,8 @@
 import language_tool_python
 import numpy as np
 
+from fada.utils import repeat_array
+
 class GrammarMetric:
     def __init__(self) -> None:
         """
@@ -33,7 +35,8 @@ class GrammarMetric:
         """
         before_dataset, before_scores = self.evaluate(before_dataset)
         after_dataset, after_scores   = self.evaluate(after_dataset)
-        scores = np.nan_to_num(before_scores.mean() / after_scores.mean())
+        before_scores = repeat_array(after_scores, before_scores)
+        scores = np.nan_to_num(after_scores / before_scores)
         if annotate_after_dataset:
             if self.save_name in after_dataset.features:
                 after_dataset = after_dataset.remove_columns([self.save_name])

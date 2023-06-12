@@ -4,7 +4,7 @@ from transformers import pipeline
 from huggingface_hub import HfApi, ModelFilter
 from cleanlab.rank import get_label_quality_scores
 
-from fada.utils import vectorize
+from fada.utils import vectorize, repeat_array
 
 class AlignmentMetric:
     """
@@ -73,7 +73,8 @@ class AlignmentMetric:
         """
         before_dataset, before_scores = self.evaluate(before_dataset)
         after_dataset, after_scores   = self.evaluate(after_dataset)
-        scores = np.nan_to_num(after_scores.mean() / before_scores.mean())
+        before_scores = repeat_array(after_scores, before_scores)
+        scores = np.nan_to_num(after_scores / before_scores)
         if annotate_after_dataset:
             if self.save_name in after_dataset.features:
                 after_dataset = after_dataset.remove_columns([self.save_name])
