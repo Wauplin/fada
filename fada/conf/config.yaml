@@ -35,11 +35,14 @@ fada:
     force: False
 
 augment:
-    technique: "all" # uniform, fada, fada-sweep, all
+    technique: "all" # uniform, fada, fada-sweep, all, transfer
     num_transforms_to_apply: 1
     num_augmentations_per_record: 3
     batch_size: 8
     keep_originals: True
+    tfim_dataset_builder_name: "${dataset.builder_name}"
+    tfim_dataset_config_name: "${dataset.config_name}"
+    save_dir: "${dataset_dir}"
     force: False
 
 train:
