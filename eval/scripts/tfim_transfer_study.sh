@@ -26,10 +26,10 @@ python -m fada.fada_augment dataset.builder_name=glue \
                             augment.save_dir=./fada/fadata/transfer_datasets \
                             dataset.num_per_class=10 
 
-python -m eval.train dataset_dir=./fada/fadata/transfer_datasets \
-                     dataset.builder_name=glue \
-                     dataset.config_name=sst2 \
-                     save_path=./eval/results/glue.sst2.training-transfer.csv
+python -m eval.train dataset_dir=./fada/fadata/transfer_datasets ^
+                     dataset.builder_name=glue ^
+                     dataset.config_name=sst2 ^
+                     train.save_path=./eval/results/glue.sst2.training-transfer.csv
 
 python -m eval.robustness model_matcher=./eval/pretrained/glue.sst2.*tfim*
 
@@ -64,7 +64,7 @@ python -m fada.fada_augment dataset.builder_name=imdb \
 python -m eval.train dataset_dir=./fada/fadata/transfer_datasets \
                      dataset.builder_name=imdb \
                      dataset.config_name=plain_text \
-                     save_path=./eval/results/imdb.plain_text.training-transfer.csv
+                     train.save_path=./eval/results/imdb.plain_text.training-transfer.csv
 
 python -m eval.robustness model_matcher=./eval/pretrained/imdb.plain_text.*tfim*
 
@@ -99,7 +99,7 @@ python -m fada.fada_augment dataset.builder_name=ag_news \
 python -m eval.train dataset_dir=./fada/fadata/transfer_datasets \
                      dataset.builder_name=ag_news \
                      dataset.config_name=default \
-                     save_path=./eval/results/ag_news.default.training-transfer.csv
+                     train.save_path=./eval/results/ag_news.default.training-transfer.csv
 
 python -m eval.robustness model_matcher=./eval/pretrained/ag_news.default.*tfim*
 
@@ -134,7 +134,7 @@ python -m fada.fada_augment dataset.builder_name=yahoo_answers_topics \
 python -m eval.train dataset_dir=./fada/fadata/transfer_datasets \
                      dataset.builder_name=yahoo_answers_topics \
                      dataset.config_name=yahoo_answers_topics \
-                     save_path=./eval/results/yahoo_answers_topics.yahoo_answers_topics.training-transfer.csv
+                     train.save_path=./eval/results/yahoo_answers_topics.yahoo_answers_topics.training-transfer.csv
 
 python -m eval.robustness model_matcher=./eval/pretrained/yahoo_answers_topics.yahoo_answers_topics.*tfim*
 
