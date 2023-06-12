@@ -26,9 +26,9 @@ python -m fada.fada_augment dataset.builder_name=glue \
                             augment.save_dir=./fada/fadata/transfer_datasets \
                             dataset.num_per_class=10 
 
-python -m eval.train dataset_dir=./fada/fadata/transfer_datasets ^
-                     dataset.builder_name=glue ^
-                     dataset.config_name=sst2 ^
+python -m eval.train dataset_dir=./fada/fadata/transfer_datasets \
+                     dataset.builder_name=glue \
+                     dataset.config_name=sst2 \
                      train.save_path=./eval/results/glue.sst2.training-transfer.csv
 
 python -m eval.robustness model_matcher=./eval/pretrained/glue.sst2.*tfim*
