@@ -5,7 +5,7 @@ import torch
 import numpy as np
 from scipy.special import softmax
 import hydra
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
 
 from datasets import load_from_disk
 
@@ -21,6 +21,7 @@ torch.use_deterministic_algorithms(False)
 def fada_augment(cfg: DictConfig) -> None:
 
     log.info("Starting fada_augment.")
+    log.info(OmegaConf.to_yaml(cfg))
 
     log.info("Setting up working directories.")
     os.makedirs(cfg.working_dir, exist_ok=True)
