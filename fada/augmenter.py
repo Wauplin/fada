@@ -106,7 +106,6 @@ class Augmenter:
                         print(e)
                         print(f"[Augmenter]: skipping augmentation from {t.transform_class.__name__} on text:'{text}' and label: {label}")
 
-                # avoid adding records with empty text
                 new_texts.append(text)
                 new_labels.append(label)
                 is_changed.append(int(original_text != text))
