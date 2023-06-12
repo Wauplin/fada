@@ -44,6 +44,7 @@ def train(cfg: DictConfig) -> None:
 
     log.info("Setting up working directories.")
     os.makedirs(cfg.results_dir, exist_ok=True)
+    os.makedirs(cfg.train.trained_models_dir, exist_ok=True)
 
     device = torch.device('cpu')
     if torch.cuda.is_available():
@@ -57,6 +58,7 @@ def train(cfg: DictConfig) -> None:
 
     dataset_paths = glob.glob(os.path.join(cfg.dataset_dir, cfg.train.dataset_matcher))
     dataset_paths = [p.replace("\\", "/") for p in dataset_paths] # fix for formatting issues in windows
+    dataset_paths = [p for p in dataset_paths if "annotated" not in p]
     dataset_techniques = [p.split("/")[-1] for p in dataset_paths]
 
     #############################################################
