@@ -73,7 +73,7 @@ def fada_search(cfg: DictConfig) -> None:
     g_metric = GrammarMetric()
 
     log.info("Loading dataset...")
-    annotated_dataset_path = f"{cfg.dataset_dir}{cfg.dataset.builder_name}.{cfg.dataset.config_name}.annotated"
+    annotated_dataset_path = os.path.join(cfg.dataset_dir, f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.annotated")
     if os.path.exists(annotated_dataset_path):
         log.info(f"Found existing feature annotated dataset @ {annotated_dataset_path}!")
         dataset = load_from_disk(annotated_dataset_path)
@@ -173,7 +173,7 @@ def fada_search(cfg: DictConfig) -> None:
         policy_heatmap(tfim, transforms, feature_extractor.featurizers)
 
         log.info("Saving intermediate matrices...")
-        save_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.fada"
+        save_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.fada{num_transforms}"
         np.save(os.path.join(cfg.fada.tfim_dir, f"{save_name}.counts-step-{i}"), counts)
         np.save(os.path.join(cfg.fada.tfim_dir, f"{save_name}.changes-step-{i}"), changes)
         np.save(os.path.join(cfg.fada.tfim_dir, f"{save_name}.alignment-step-{i}"), alignment_scores)
