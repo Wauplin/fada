@@ -37,7 +37,7 @@ fada:
 augment:
     technique: "all" # uniform, fada, fada-sweep, all
     num_transforms_to_apply: 1
-    num_augmentations_per_record: 1
+    num_augmentations_per_record: 3
     batch_size: 8
     keep_originals: True
     force: False

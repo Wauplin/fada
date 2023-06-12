@@ -48,7 +48,7 @@ class Augmenter:
                  num_augmentations_per_record = 5,
                  num_transforms_to_apply = 2,
                  batch_size = 10,
-                 allow_resampling = False,
+                 allow_resampling = True,
                  keep_originals = True,
                  feature_extractor = None,
                  perf_extractor = None):
@@ -107,10 +107,9 @@ class Augmenter:
                         print(f"[Augmenter]: skipping augmentation from {t.transform_class.__name__} on text:'{text}' and label: {label}")
 
                 # avoid adding records with empty text
-                if text:
-                    new_texts.append(text)
-                    new_labels.append(label)
-                    is_changed.append(int(original_text != text))
+                new_texts.append(text)
+                new_labels.append(label)
+                is_changed.append(int(original_text != text))
 
         if self.keep_originals:
             new_texts = batch['text'] + new_texts
@@ -133,7 +132,7 @@ class Augmenter:
                 "transforms_applied": transforms_applied,
                 "is_changed": is_changed
             }
-
+        
         return out
             
                                                    

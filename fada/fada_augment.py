@@ -27,7 +27,7 @@ def fada_augment(cfg: DictConfig) -> None:
     os.makedirs(cfg.dataset_dir, exist_ok=True)
     os.makedirs(cfg.fada.tfim_dir, exist_ok=True)
 
-    dataset_matcher = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.{cfg.augment.technique}.{cfg.dataset.num_per_class}*"
+    dataset_matcher = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.*.{cfg.dataset.num_per_class}*"
     log.info(f"Checking to see if fada_augment has been run for this dataset ({dataset_matcher}) before...")
     dataset_paths = glob.glob(os.path.join(cfg.dataset_dir, dataset_matcher))
     if len(dataset_paths) > 0:
