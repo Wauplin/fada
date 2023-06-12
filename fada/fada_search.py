@@ -41,8 +41,15 @@ def fada_search(cfg: DictConfig) -> None:
     os.makedirs(cfg.amr_extractor.amr_dir, exist_ok=True)
     os.makedirs(cfg.fada.tfim_dir, exist_ok=True)
 
+    log.info("Loading & initializing transforms.")
+    transforms = [load_class(t) for t in cfg.transforms]
+    transforms = sorted(transforms, key=lambda t: t.__name__)
+    transforms = [Transform(t, task_name=cfg.dataset.task_name) for t in transforms]
+    num_transforms = len(transforms)
+    log.info(f"Running fada search with {num_transforms} to choose from...")
+
     log.info("Checking to see if fada_search has been run for this dataset before...")
-    matrix_paths = glob.glob(os.path.join(cfg.fada.tfim_dir, f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}*"))
+    matrix_paths = glob.glob(os.path.join(cfg.fada.tfim_dir, f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.fada{num_transforms}*"))
     if len(matrix_paths) > 0:
         log.info("Found existing TFIM metadata!")
         if not cfg.fada.force:
@@ -52,11 +59,6 @@ def fada_search(cfg: DictConfig) -> None:
             log.info("fada.force=True. Continuing with new fada_search. This will override existing metadata.")
     else:
         log.info("No existing fada search results found. Continuing with fada_search.")
-
-    log.info("Loading & initializing transforms.")
-    transforms = [load_class(t) for t in cfg.transforms]
-    transforms = sorted(transforms, key=lambda t: t.__name__)
-    transforms = [Transform(t, task_name=cfg.dataset.task_name) for t in transforms]
 
     log.info("Initializing metric extractors.")
     feature_extractor = AMRFeatureExtractor(
