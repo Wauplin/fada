@@ -45,10 +45,8 @@ class AlignmentMetric:
         print('Using ' + model_id + ' to support cleanlab datalabel issues.')
         self.pipe = pipeline("text-classification", 
                             model=model_id, 
+                            tokenizer=(model_id, {"max_length":512, "padding":"max_length", "truncation":True}),
                             device=self.device, 
-                            max_length=512,
-                            padding='max_length',
-                            truncation=True,
                             top_k=None)
 
     def extract_prediction_probabilities(self, dataset):
