@@ -44,6 +44,8 @@ def fada_augment(cfg: DictConfig) -> None:
     transforms = [load_class(t) for t in cfg.transforms]
     transforms = sorted(transforms, key=lambda t: t.__name__)
     transforms = [Transform(t, task_name=cfg.dataset.task_name) for t in transforms]
+    num_transforms = len(transforms)
+    log.info(f"Running augment with {num_transforms} to choose from...")
     
     log.info("Loading dataset...")
     annotated_dataset_path = os.path.join(cfg.dataset_dir, f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.annotated")
@@ -77,7 +79,7 @@ def fada_augment(cfg: DictConfig) -> None:
     log.info(f"Beginning augmentation for technique={cfg.augment.technique}")
 
     if "uniform" in cfg.augment.technique:
-        save_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.{cfg.augment.technique}.{cfg.dataset.num_per_class}"
+        save_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.uniform{num_transforms}.{cfg.dataset.num_per_class}"
         save_path = os.path.join(cfg.dataset_dir, save_name)
         augmenter = Augmenter(dataset=dataset, 
                     transforms=transforms,  
@@ -115,7 +117,7 @@ def fada_augment(cfg: DictConfig) -> None:
 
             policy_probabilities = implement_policy_probabilities(tfim, features)
 
-            save_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.fada.{cfg.dataset.num_per_class}.a.{cfg.fada.c_a}.f.{cfg.fada.c_f}.g.{cfg.fada.c_g}"
+            save_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.fada{num_transforms}.{cfg.dataset.num_per_class}.a.{cfg.fada.c_a}.f.{cfg.fada.c_f}.g.{cfg.fada.c_g}"
             save_path = os.path.join(cfg.dataset_dir, save_name)
             augmenter = Augmenter(dataset=dataset, 
                         transforms=transforms,  
@@ -144,7 +146,7 @@ def fada_augment(cfg: DictConfig) -> None:
 
                 policy_probabilities = implement_policy_probabilities(tfim, features)
 
-                save_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.fada.{cfg.dataset.num_per_class}.a.{c_a}.f.{c_f}.g.{c_g}"
+                save_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.fada{num_transforms}.{cfg.dataset.num_per_class}.a.{c_a}.f.{c_f}.g.{c_g}"
                 save_path = os.path.join(cfg.dataset_dir, save_name)
                 augmenter = Augmenter(dataset=dataset, 
                             transforms=transforms,  
@@ -164,7 +166,7 @@ def fada_augment(cfg: DictConfig) -> None:
             log.info("Commencing with creating all augmented datasets - uniform + fada-sweep")
 
             log.info("Starting uniform aug...")
-            save_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.uniform.{cfg.dataset.num_per_class}"
+            save_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.uniform{num_transforms}.{cfg.dataset.num_per_class}"
             save_path = os.path.join(cfg.dataset_dir, save_name)
             augmenter = Augmenter(dataset=dataset, 
                         transforms=transforms,  
@@ -195,7 +197,7 @@ def fada_augment(cfg: DictConfig) -> None:
 
                 policy_probabilities = implement_policy_probabilities(tfim, features)
 
-                save_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.fada.{cfg.dataset.num_per_class}.a.{c_a}.f.{c_f}.g.{c_g}"
+                save_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.fada{num_transforms}.{cfg.dataset.num_per_class}.a.{c_a}.f.{c_f}.g.{c_g}"
                 save_path = os.path.join(cfg.dataset_dir, save_name)
                 augmenter = Augmenter(dataset=dataset, 
                             transforms=transforms,  
