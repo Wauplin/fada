@@ -46,11 +46,10 @@ class AlignmentMetric:
         self.pipe = pipeline("text-classification", 
                             model=model_id, 
                             tokenizer=(model_id, {"max_length":512, "padding":"max_length", "truncation":True}),
-                            device=self.device, 
-                            top_k=None)
+                            device=self.device)
 
     def extract_prediction_probabilities(self, dataset):
-        output = self.pipe(dataset['text'])
+        output = self.pipe(dataset['text'], top_k=None)
         return np.stack([vectorize(o) for o in output])
 
     def evaluate(self, dataset, annotate_dataset=False):
