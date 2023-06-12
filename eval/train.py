@@ -59,6 +59,7 @@ def train(cfg: DictConfig) -> None:
     dataset_paths = glob.glob(os.path.join(cfg.dataset_dir, cfg.train.dataset_matcher))
     dataset_paths = [p.replace("\\", "/") for p in dataset_paths] # fix for formatting issues in windows
     dataset_paths = [p for p in dataset_paths if "annotated" not in p]
+    dataset_paths.sort()
     dataset_techniques = [p.split("/")[-1] for p in dataset_paths]
 
     #############################################################
