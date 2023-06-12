@@ -136,6 +136,7 @@ def fada_search(cfg: DictConfig) -> None:
             num_to_sample = cfg.fada.num_to_transform_per_step if len(f_candidates) > cfg.fada.num_to_transform_per_step else len(f_candidates)
             f_indices     = np.random.choice(f_candidates, num_to_sample, replace=False)
             f_dataset     = dataset.select(f_indices)
+            f_dataset     = f_dataset.remove_columns(["features"])
 
             t_prob = np.zeros(num_transforms)
             t_prob[t] = 1

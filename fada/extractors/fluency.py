@@ -1,3 +1,4 @@
+import torch
 import evaluate
 import numpy as np
 import transformers
@@ -18,6 +19,7 @@ class FluencyMetric:
         self.model_id = model_id
         self.metric = evaluate.load("perplexity", module_type="metric")
         self.save_name = "fluency_score"
+        torch.use_deterministic_algorithms(False)
 
     def disable_progress_bars(self):
         evaluate.utils.logging.disable_progress_bar() 
@@ -45,7 +47,7 @@ class FluencyMetric:
         """
         before_dataset, before_scores = self.evaluate(before_dataset)
         after_dataset, after_scores   = self.evaluate(after_dataset)
-        scores = np.nan_to_num(before_scores / after_scores)
+        scores = np.nan_to_num(before_scores.mean() / after_scores.mean())
         if annotate_after_dataset:
             if self.save_name in after_dataset.features:
                 after_dataset = after_dataset.remove_columns([self.save_name])

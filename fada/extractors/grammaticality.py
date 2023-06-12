@@ -33,7 +33,7 @@ class GrammarMetric:
         """
         before_dataset, before_scores = self.evaluate(before_dataset)
         after_dataset, after_scores   = self.evaluate(after_dataset)
-        scores = np.nan_to_num(before_scores / after_scores)
+        scores = np.nan_to_num(before_scores.mean() / after_scores.mean())
         if annotate_after_dataset:
             if self.save_name in after_dataset.features:
                 after_dataset = after_dataset.remove_columns([self.save_name])

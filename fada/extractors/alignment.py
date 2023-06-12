@@ -23,6 +23,7 @@ class AlignmentMetric:
 
         # initializations
         self.find_model_for_dataset()
+        torch.use_deterministic_algorithms(False)
 
     def find_model_for_dataset(self):
         if not self.model_id:
@@ -46,10 +47,11 @@ class AlignmentMetric:
         self.pipe = pipeline("text-classification", 
                             model=model_id, 
                             tokenizer=(model_id, {"max_length":512, "padding":"max_length", "truncation":True}),
-                            device=self.device)
+                            device=self.device,
+                            return_all_scores=True)
 
     def extract_prediction_probabilities(self, dataset):
-        output = self.pipe(dataset['text'], top_k=None)
+        output = self.pipe(dataset['text'])
         return np.stack([vectorize(o) for o in output])
 
     def evaluate(self, dataset, annotate_dataset=False):
@@ -71,7 +73,7 @@ class AlignmentMetric:
         """
         before_dataset, before_scores = self.evaluate(before_dataset)
         after_dataset, after_scores   = self.evaluate(after_dataset)
-        scores = np.nan_to_num(after_scores / before_scores)
+        scores = np.nan_to_num(after_scores.mean() / before_scores.mean())
         if annotate_after_dataset:
             if self.save_name in after_dataset.features:
                 after_dataset = after_dataset.remove_columns([self.save_name])
