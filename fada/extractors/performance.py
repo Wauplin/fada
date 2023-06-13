@@ -75,10 +75,12 @@ class PerformanceExtractor:
         return np.stack([vectorize(o) for o in output])
 
     def annotate_preds(self, dataset):
-        probs = self.extract_prediction_probabilities(dataset)
-        preds = np.argmax(probs, axis=1)
         if "probs" in dataset.features:
             dataset = dataset.remove_columns(["probs"])
+        if "preds" in dataset.features:
+            dataset = dataset.remove_columns(["preds"])
+        probs = self.extract_prediction_probabilities(dataset)
+        preds = np.argmax(probs, axis=1)
         dataset = dataset.add_column("probs", [p for p in probs])
         dataset = dataset.add_column("preds", [p for p in preds])
         return dataset, np.array(preds)
