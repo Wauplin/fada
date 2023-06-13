@@ -218,22 +218,29 @@ def robustness(cfg: DictConfig) -> None:
             attacker = Attacker(attack, dataset, attack_args)
             attack_results = attacker.attack_dataset()
 
-            num_results = 0
+            num_skipped = 0
             num_failures = 0
             num_successes = 0
 
             for result in attack_results:                
-                num_results += 1
                 if (type(result) == textattack.attack_results.SuccessfulAttackResult or 
                     type(result) == textattack.attack_results.MaximizedAttackResult):
                     num_successes += 1
-                else:
+                if type(result) == textattack.attack_results.SuccessfulAttackResult:
+                    num_skipped += 1
+                if type(result) == textattack.attack_results.FailedAttackResult:
                     num_failures += 1
 
-            attack_success = num_successes / num_results
+            attack_success = num_successes / (num_successes + num_failures)
+            out[f"num_skipped_{recipe.__name__}"] = num_skipped
+            out[f"num_failures_{recipe.__name__}"] = num_failures
+            out[f"num_successes_{recipe.__name__}"] = num_successes
             out[f"attack_success_{recipe.__name__}"] = attack_success
 
-            print("{0} Attack Success: {1:0.2f}".format(recipe.__name__, attack_success))
+            log.info(f"{recipe.__name__} num_skipped_: {num_skipped}")
+            log.info(f"{recipe.__name__} num_failures: {num_failures}")
+            log.info(f"{recipe.__name__} num_successes: {num_successes}")
+            log.info(f"{recipe.__name__} attack_success: {attack_success}")
 
         results.append(out)
 
