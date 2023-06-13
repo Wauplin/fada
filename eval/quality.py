@@ -23,7 +23,7 @@ torch.use_deterministic_algorithms(False)
 ## Main Loop Functionality ##################################
 #############################################################
 
-@hydra.main(version_base=None, config_path="./conf", config_name="config")
+@hydra.main(version_base=None, config_path="../fada/conf/", config_name="config")
 def quality(cfg: DictConfig):
 
     #############################################################
@@ -32,7 +32,7 @@ def quality(cfg: DictConfig):
 
     log = logging.getLogger(__name__)
 
-    log.info("Starting training...")
+    log.info("Starting quality assessment...")
     log.info(OmegaConf.to_yaml(cfg))
 
     log.info("Setting up working directories.")
@@ -42,7 +42,7 @@ def quality(cfg: DictConfig):
     if torch.cuda.is_available():
         os.environ["CUDA_VISIBLE_DEVICES"] = str(cfg.train.visible_cuda_devices)
         device = torch.device('cuda')
-    log.info(f"training on device={device}")
+    log.info(f"ealuating quality on device={device}")
 
     #############################################################
     ## Search for datasets ######################################
@@ -55,22 +55,20 @@ def quality(cfg: DictConfig):
     dataset_techniques = [p.split("/")[-1] for p in dataset_paths]
 
     #############################################################
-    ## Prepare training iterations ##############################
+    ## Prepare quality eval iterations ##########################
     #############################################################
 
     run_args = []
-    for run_num in range(cfg.train.num_runs):
-        for technique in dataset_techniques:
-            run_args.append({
-                "run_num":run_num,
-                "technique":technique,
-            })
+    for technique in dataset_techniques:
+        run_args.append({
+            "technique":technique,
+        })
  
     log.info(run_args)
 
     results = []
-    if os.path.exists(cfg.train.save_path):
-        results.extend(pd.read_csv(cfg.train.save_path).to_dict("records"))
+    if os.path.exists(cfg.quality.save_path):
+        results.extend(pd.read_csv(cfg.quality.save_path).to_dict("records"))
         start_position = len(results)
     else:
         start_position = 0
@@ -81,7 +79,6 @@ def quality(cfg: DictConfig):
         #############################################################
         ## Initializations ##########################################
         #############################################################
-        run_num    = run_arg['run_num']
         technique  = run_arg['technique']
 
         log.info(pd.DataFrame([run_arg]))
@@ -109,7 +106,8 @@ def quality(cfg: DictConfig):
         raw_datasets = rename_text_columns(raw_datasets)
         raw_datasets = remove_unused_columns(raw_datasets)
         raw_datasets = raw_datasets.shuffle()
-        comparison_dataset = raw_datasets["train"].select(range(len(evaluation_dataset)))
+        num_to_compare = len(raw_datasets["validation"]) if len(evaluation_dataset) > len(raw_datasets["validation"]) else len(evaluation_dataset)
+        comparison_dataset = raw_datasets["validation"].select(range(num_to_compare))
         log.info(f"comparison_dataset: {comparison_dataset}")
 
         #############################################################
@@ -219,9 +217,11 @@ def quality(cfg: DictConfig):
         log.info(f"gutcheck_recall_score={out['gutcheck_recall_score']}")
         log.info(f"gutcheck_f1_score={out['gutcheck_f1_score']}")
 
+        results.append(out)
+
         log.info(f"Saving results to {cfg.quality.save_path}")
         df = pd.DataFrame(results)
-        df.to_csv(cfg.train.save_path, index=False)
+        df.to_csv(cfg.quality.save_path, index=False)
 
 if __name__ == "__main__":
     quality()

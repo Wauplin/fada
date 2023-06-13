@@ -78,6 +78,6 @@ robustness:
     save_path: "${results_dir}/${dataset.builder_name}.${dataset.config_name}.robustness.csv"
 
 quality:
-    dataset_matcher: "${dataset_dir}/{dataset.builder_name}.${dataset.config_name}.*"
+    dataset_matcher: "${dataset.builder_name}.${dataset.config_name}.*"
     model_id: "${alignment_extractor.model_id}"
     save_path: "${results_dir}/${dataset.builder_name}.${dataset.config_name}.quality.csv"
