@@ -204,7 +204,7 @@ def robustness(cfg: DictConfig) -> None:
         #############################################################
 
         mw = CustomModelWrapper(model, tokenizer)
-        dataset = HuggingFaceDataset(dataset, shuffle=True)
+        ta_dataset = HuggingFaceDataset(dataset, shuffle=True)
         attack_args = textattack.AttackArgs(
             num_examples=cfg.robustness.num_advs, 
             random_seed=run_num,
@@ -215,7 +215,7 @@ def robustness(cfg: DictConfig) -> None:
         for recipe in attack_recipes:
 
             attack = recipe.build(mw)
-            attacker = Attacker(attack, dataset, attack_args)
+            attacker = Attacker(attack, ta_dataset, attack_args)
             attack_results = attacker.attack_dataset()
 
             num_skipped = 0
