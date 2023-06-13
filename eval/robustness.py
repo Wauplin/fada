@@ -226,9 +226,9 @@ def robustness(cfg: DictConfig) -> None:
                 if (type(result) == textattack.attack_results.SuccessfulAttackResult or 
                     type(result) == textattack.attack_results.MaximizedAttackResult):
                     num_successes += 1
-                if type(result) == textattack.attack_results.SuccessfulAttackResult:
+                elif type(result) == textattack.attack_results.SuccessfulAttackResult:
                     num_skipped += 1
-                if type(result) == textattack.attack_results.FailedAttackResult:
+                elif type(result) == textattack.attack_results.FailedAttackResult:
                     num_failures += 1
 
             attack_success = num_successes / (num_successes + num_failures)
