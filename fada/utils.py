@@ -4,6 +4,7 @@ import torch
 import seaborn as sns
 import matplotlib.pyplot as plt
 import importlib
+from collections import Counter
 
 # helper functions
 
@@ -178,3 +179,8 @@ def repeat_array(arr_a, arr_b):
         return repeated_arr_b
     else:
         return arr_b
+    
+def count_duplicates(dataset):
+    text_counts = Counter(dataset["text"])
+    duplicate_counts = {text: count for text, count in text_counts.items() if count > 1}
+    return len(duplicate_counts)

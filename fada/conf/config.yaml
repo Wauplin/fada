@@ -76,3 +76,8 @@ robustness:
         - textattack.attack_recipes.TextBuggerLi2018 # 15 min / 100 examples
         - textattack.attack_recipes.TextFoolerJin2019 # 15 min / 100 examples
     save_path: "${results_dir}/${dataset.builder_name}.${dataset.config_name}.robustness.csv"
+
+quality:
+    dataset_matcher: "${dataset_dir}/{dataset.builder_name}.${dataset.config_name}.*"
+    model_id: "${alignment_extractor.model_id}"
+    save_path: "${results_dir}/${dataset.builder_name}.${dataset.config_name}.quality.csv"

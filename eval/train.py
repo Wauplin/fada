@@ -36,6 +36,9 @@ os.environ["WANDB_DISABLED"] = "true"
 
 @hydra.main(version_base=None, config_path="../fada/conf/", config_name="config")
 def train(cfg: DictConfig) -> None:
+    #############################################################
+    ## Initializations ##########################################
+    #############################################################
 
     log = logging.getLogger(__name__)
 
