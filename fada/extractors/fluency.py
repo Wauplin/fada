@@ -3,7 +3,7 @@ import evaluate
 import numpy as np
 import transformers
 
-from fada.utils import repeat_array
+from fada.utils import repeat_array, replace_empty_text
 
 class FluencyMetric:
     def __init__(self, model_id='gpt2') -> None:
@@ -32,6 +32,7 @@ class FluencyMetric:
         transformers.utils.logging.enable_progress_bar() 
     
     def evaluate(self, dataset, annotate_dataset=False):
+        dataset = replace_empty_text(dataset)
         scores = self.metric.compute(
             predictions=dataset['text'], 
             model_id=self.model_id,

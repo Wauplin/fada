@@ -184,3 +184,9 @@ def count_duplicates(dataset):
     text_counts = Counter(dataset["text"])
     duplicate_counts = {text: count for text, count in text_counts.items() if count > 1}
     return len(duplicate_counts)
+
+def replace_empty_text(dataset, replace_string="<<empty>>"):
+    for example in dataset:
+        if example["text"] == "":
+            example["text"] = replace_string
+    return dataset
