@@ -37,7 +37,7 @@ python -m eval.train dataset_dir=./fada/fadata/transfer_datasets \
                      train.save_path=./eval/results/glue.sst2.training-transfer.csv
 
 python -m eval.robustness robustness.model_matcher=./eval/pretrained/*glue.sst2.*tfim* \
-                          robustness.save_path=./eval/results/glue.sst2.robustness-transfer.csv"
+                          robustness.save_path=./eval/results/glue.sst2.robustness-transfer.csv
 
 # imdb.plain_text --> others
 python -m fada.fada_augment dataset.builder_name=imdb \
@@ -73,7 +73,7 @@ python -m eval.train dataset_dir=./fada/fadata/transfer_datasets \
                      train.save_path=./eval/results/imdb.plain_text.training-transfer.csv
 
 python -m eval.robustness robustness.model_matcher=./eval/pretrained/*imdb.plain_text.*tfim* \
-                          robustness.save_path=./eval/results/imdb.plain_text.robustness-transfer.csv"
+                          robustness.save_path=./eval/results/imdb.plain_text.robustness-transfer.csv
 
 # ag_news.default --> others
 python -m fada.fada_augment dataset.builder_name=ag_news \
@@ -109,7 +109,7 @@ python -m eval.train dataset_dir=./fada/fadata/transfer_datasets \
                      train.save_path=./eval/results/ag_news.default.training-transfer.csv
 
 python -m eval.robustness robustness.model_matcher=./eval/pretrained/*ag_news.default.*tfim* \
-                          robustness.save_path=./eval/results/ag_news.default.robustness-transfer.csv"
+                          robustness.save_path=./eval/results/ag_news.default.robustness-transfer.csv
 
 # yahoo_answers_topics.yahoo_answers_topics --> others
 python -m fada.fada_augment dataset.builder_name=yahoo_answers_topics \
@@ -145,5 +145,5 @@ python -m eval.train dataset_dir=./fada/fadata/transfer_datasets \
                      train.save_path=./eval/results/yahoo_answers_topics.yahoo_answers_topics.training-transfer.csv
 
 python -m eval.robustness robustness.model_matcher=./eval/pretrained/*yahoo_answers_topics.yahoo_answers_topics.*tfim* \
-                          robustness.save_path=./eval/results/yahoo_answers_topics.yahoo_answers_topics.robustness-transfer.csv"
+                          robustness.save_path=./eval/results/yahoo_answers_topics.yahoo_answers_topics.robustness-transfer.csv
 
