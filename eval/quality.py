@@ -157,7 +157,7 @@ def quality(cfg: DictConfig):
         comparison_duplicate_count = count_duplicates(comparison_dataset)
         out["eval_dupes"] = evaluation_duplicate_count
         out["comp_dupes"] = comparison_duplicate_count
-        out["dupe_score"] = out["comp_dupes"] / out["eval_dupes"]
+        out["dupe_score"] = out["comp_dupes"] / out["eval_dupes"] if out["eval_dupes"] > 0 else 0
         log.info(f"eval_dupes={out['eval_dupes']}")
         log.info(f"comp_dupes={out['comp_dupes']}")
         log.info(f"dupe_score={out['dupe_score']}")
