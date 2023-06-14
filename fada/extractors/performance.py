@@ -67,11 +67,14 @@ class PerformanceExtractor:
                 return_all_scores=True
             )
         else:
-            self.pipe = pipeline("text-classification", 
-                                model=self.model, 
-                                tokenizer=self.tokenizer,
-                                device=self.device,
-                                return_all_scores=True)
+            self.pipe = pipeline(
+                "text-classification", 
+                model=self.model, 
+                tokenizer=self.tokenizer,
+                device=self.device,
+                max_length=512,
+                truncation=True,
+                return_all_scores=True)
 
 
     def extract_prediction_probabilities(self, dataset):
