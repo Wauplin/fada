@@ -85,8 +85,8 @@ class PerformanceExtractor:
         dataset = dataset.add_column("preds", [p for p in preds])
         return dataset, np.array(preds)
 
-    def extract_performance(self, dataset):
-        if "preds" not in dataset.features:
+    def extract_performance(self, dataset, force=True):
+        if "preds" not in dataset.features or force:
             dataset, preds = self.annotate_preds(dataset)
         return self.compute_metrics(preds, dataset["label"])
 
