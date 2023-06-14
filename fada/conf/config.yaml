@@ -60,7 +60,7 @@ train:
     learning_rate: 2e-5
     weight_decay: 0.01
     visible_cuda_devices: "0,1"
-    max_val_size: 10000
+    max_val_size: 1000
     trained_models_dir: "./eval/pretrained"
     save_path: "${results_dir}/${dataset.builder_name}.${dataset.config_name}.training.csv"
 
