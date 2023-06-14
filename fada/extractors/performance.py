@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 import evaluate
-from transformers import pipeline
+from transformers import pipeline, AutoTokenizer
 from huggingface_hub import HfApi, ModelFilter
 
 from fada.utils import vectorize, ConfiguredMetric
@@ -57,11 +57,15 @@ class PerformanceExtractor:
                 # use provided model_id string
                 model_id = self.model_id
             print(f"Using {model_id} to measure performance.")
-            self.pipe = pipeline("text-classification", 
-                                model=model_id, 
-                                tokenizer=(model_id, {"max_length":512, "padding":"max_length", "truncation":True}),
-                                device=self.device,
-                                return_all_scores=True)
+            tokenizer = AutoTokenizer.from_pretrained(model_id)
+            self.pipe = pipeline(
+                "text-classification",
+                model=model_id,
+                tokenizer=tokenizer,
+                max_length=512,
+                truncation=True,
+                return_all_scores=True
+            )
         else:
             self.pipe = pipeline("text-classification", 
                                 model=self.model, 

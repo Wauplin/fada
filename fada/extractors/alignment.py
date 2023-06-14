@@ -1,6 +1,6 @@
 import torch
 import numpy as np
-from transformers import pipeline
+from transformers import pipeline, AutoTokenizer
 from huggingface_hub import HfApi, ModelFilter
 from cleanlab.rank import get_label_quality_scores
 
@@ -44,11 +44,15 @@ class AlignmentMetric:
             model_id = self.model_id
 
         print('Using ' + model_id + ' to support cleanlab datalabel issues.')
-        self.pipe = pipeline("text-classification", 
-                            model=model_id, 
-                            tokenizer=(model_id, {"max_length":512, "padding":"max_length", "truncation":True}),
-                            device=self.device,
-                            return_all_scores=True)
+        tokenizer = AutoTokenizer.from_pretrained(model_id)
+        self.pipe = pipeline(
+            "text-classification",
+            model=model_id,
+            tokenizer=tokenizer,
+            max_length=512,
+            truncation=True,
+            return_all_scores=True
+        )
 
     def extract_prediction_probabilities(self, dataset):
         output = self.pipe(dataset['text'])
