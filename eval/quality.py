@@ -179,7 +179,7 @@ def quality(cfg: DictConfig):
 
         log.info("Extracting grammaticality scores...")
         evaluation_dataset, g_scores_eval = g_metric.evaluate(evaluation_dataset)
-        evaluation_dataset, g_scores_comp = g_metric.evaluate(comparison_dataset)
+        comparison_dataset, g_scores_comp = g_metric.evaluate(comparison_dataset)
         g_scores_eval = g_scores_eval.mean()
         g_scores_comp = g_scores_comp.mean()
         out["eval_grammaticality"] = g_scores_eval
