@@ -80,4 +80,5 @@ robustness:
 quality:
     dataset_matcher: "${dataset.builder_name}.${dataset.config_name}.*"
     model_id: "${alignment_extractor.model_id}"
+    max_dataset_size: 1000
     save_path: "${results_dir}/${dataset.builder_name}.${dataset.config_name}.quality.csv"

@@ -16,6 +16,7 @@ from fada.extractors import (
     GrammarMetric,
     FluencyMetric
 )
+from fada.filters import balance_dataset
 
 torch.use_deterministic_algorithms(False)
 
@@ -92,6 +93,14 @@ def quality(cfg: DictConfig):
         log.info("Loading transformed dataset...")
         save_path = os.path.join(cfg.dataset_dir, technique)
         evaluation_dataset = load_from_disk(save_path).shuffle()
+
+        num_labels = len(np.unique(evaluation_dataset["label"]))
+        
+        if len(evaluation_dataset) > cfg.quality.max_dataset_size:
+            log.info("Triming down dataset dataset...")
+            num_per_class = cfg.quality.max_dataset_size // num_labels
+            evaluation_dataset = balance_dataset(evaluation_dataset, num_per_class)
+
         log.info(f"evaluation_dataset: {evaluation_dataset}")
 
         log.info("Loading comparison dataset of same size as the transformed dataset...")
