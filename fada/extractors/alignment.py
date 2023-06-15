@@ -49,7 +49,7 @@ class AlignmentMetric:
             "text-classification",
             model=model_id,
             tokenizer=tokenizer,
-            max_length=512,
+            max_length=256,
             truncation=True,
             return_all_scores=True
         )
