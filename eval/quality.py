@@ -6,7 +6,7 @@ import pandas as pd
 import hydra
 from omegaconf import DictConfig, OmegaConf
 
-from transformers import AutoModel, AutoTokenizer
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
 from datasets import load_dataset, load_from_disk
 
 from fada.utils import *
@@ -123,9 +123,9 @@ def quality(cfg: DictConfig):
         ## Model + Tokenizer ########################################
         #############################################################
 
-        log.info(f"Loading quality model: {cfg.quality.model_id}")
+        log.info(f"Loading quality model + tokenizer with model_id: {cfg.quality.model_id}")
         tokenizer = AutoTokenizer.from_pretrained(cfg.quality.model_id)
-        model = AutoModel.from_pretrained(cfg.quality.model_id, num_labels=num_labels).to(device)
+        model = AutoModelForSequenceClassification.from_pretrained(cfg.quality.model_id, num_labels=num_labels).to(device)
 
         #############################################################
         ## Initializing Extractors ##################################
