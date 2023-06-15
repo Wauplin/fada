@@ -6,7 +6,7 @@ import pandas as pd
 import hydra
 from omegaconf import DictConfig, OmegaConf
 
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
+from transformers import AutoModel, AutoTokenizer
 from datasets import load_dataset, load_from_disk
 
 from fada.utils import *
@@ -123,9 +123,9 @@ def quality(cfg: DictConfig):
         ## Model + Tokenizer ########################################
         #############################################################
 
-        log.info("Loading quality model...")
+        log.info(f"Loading quality model: {cfg.quality.model_id}")
         tokenizer = AutoTokenizer.from_pretrained(cfg.quality.model_id)
-        model = AutoModelForSequenceClassification.from_pretrained(cfg.quality.model_id).to(device)
+        model = AutoModel.from_pretrained(cfg.quality.model_id, num_labels=num_labels).to(device)
 
         #############################################################
         ## Initializing Extractors ##################################
@@ -136,7 +136,7 @@ def quality(cfg: DictConfig):
         a_metric = AlignmentMetric(
             builder_name=cfg.dataset.builder_name, 
             config_name=cfg.dataset.config_name,
-            model_id=cfg.alignment_extractor.model_id)
+            model_id=cfg.quality.model_id)
         f_metric = FluencyMetric()
         g_metric = GrammarMetric()
 
