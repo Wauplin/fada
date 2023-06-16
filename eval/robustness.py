@@ -92,7 +92,7 @@ def robustness(cfg: DictConfig) -> None:
             raw_datasets.pop("test") # test set is not usable (all labels -1)
         raw_datasets = prepare_splits(raw_datasets)
         raw_datasets = rename_text_columns(raw_datasets)
-        raw_datasets = raw_datasets.shuffle(seed=run_num)
+        raw_datasets = raw_datasets.shuffle(seed=0)
         dataset = raw_datasets["test"]
         if cfg.dataset.text_key != "text" and cfg.dataset.text_key in dataset.features.keys():
             dataset = dataset.rename_column(cfg.dataset.text_key, "text")
