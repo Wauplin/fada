@@ -207,6 +207,7 @@ def robustness(cfg: DictConfig) -> None:
         ta_dataset = HuggingFaceDataset(dataset, shuffle=True)
         attack_args = textattack.AttackArgs(
             num_examples=cfg.robustness.num_advs, 
+            attack_n=True,
             random_seed=run_num,
             # parallel=True,
             # num_workers_per_device=2,
