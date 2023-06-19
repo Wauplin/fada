@@ -57,14 +57,14 @@ class PerformanceExtractor:
                 # use provided model_id string
                 model_id = self.model_id
             print(f"Using {model_id} to measure performance.")
-            tokenizer = AutoTokenizer.from_pretrained(model_id)
             self.pipe = pipeline(
                 "text-classification",
                 model=model_id,
-                tokenizer=tokenizer,
+                tokenizer=model_id,
+                device=self.device,
                 max_length=256,
                 truncation=True,
-                return_all_scores=True
+                top_k=None
             )
         else:
             self.pipe = pipeline(
@@ -74,7 +74,7 @@ class PerformanceExtractor:
                 device=self.device,
                 max_length=256,
                 truncation=True,
-                return_all_scores=True)
+                top_k=None)
 
 
     def extract_prediction_probabilities(self, dataset):
