@@ -26,16 +26,14 @@ if __name__ == "__main__":
 
     # checklist
     checklist_augmenter = CheckListAugmenter(
-        transformations_per_example=3,
-        fast_augment=True,
+        transformations_per_example=3
     )
     checklist_aug_mapper = AugMapper(checklist_augmenter)
 
     # eda
     eda_augmenter = EasyDataAugmenter(
         pct_words_to_swap=0.1,
-        transformations_per_example=3,
-        fast_augment=True,
+        transformations_per_example=3
     )
     eda_aug_mapper = AugMapper(eda_augmenter)
 
