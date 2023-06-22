@@ -60,4 +60,4 @@ if __name__ == "__main__":
             print(f"found existing dataset {eda_save_path}... skipping...") 
         else:
             eda_dataset = dataset.map(eda_aug_mapper.apply_to_batch, batched=True, batch_size=10)
-            checklist_dataset.save_to_disk(eda_save_path)
+            eda_dataset.save_to_disk(eda_save_path)
