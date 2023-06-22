@@ -150,6 +150,7 @@ def quality(cfg: DictConfig):
             "dataset.builder_name":  cfg.dataset.builder_name,
             "dataset.config_name":   cfg.dataset.config_name,
             "dataset_size":          len(evaluation_dataset),
+            "technique":             technique,
         })
 
         log.info("Counting duplication frequency...")
