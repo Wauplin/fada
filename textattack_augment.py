@@ -49,8 +49,7 @@ if __name__ == "__main__":
         # augment + save checklist
         checklist_save_path = dataset_path.replace("original", "checklist")
         if os.path.exists(checklist_save_path):
-            print(f"found existing dataset {checklist_save_path}... skipping...")
-            continue 
+            print(f"found existing dataset {checklist_save_path}... skipping...") 
         else:
             checklist_dataset = dataset.map(checklist_aug_mapper.apply_to_batch, batched=True, batch_size=10)
             checklist_dataset.save_to_disk(checklist_save_path)
@@ -58,8 +57,7 @@ if __name__ == "__main__":
         # augment + save eda
         eda_save_path = dataset_path.replace("original", "eda")
         if os.path.exists(eda_save_path):
-            print(f"found existing dataset {eda_save_path}... skipping...")
-            continue 
+            print(f"found existing dataset {eda_save_path}... skipping...") 
         else:
             eda_dataset = dataset.map(eda_aug_mapper.apply_to_batch, batched=True, batch_size=10)
             checklist_dataset.save_to_disk(eda_save_path)
