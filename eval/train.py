@@ -51,7 +51,7 @@ def train(cfg: DictConfig) -> None:
 
     device = torch.device('cpu')
     if torch.cuda.is_available():
-        os.environ["CUDA_VISIBLE_DEVICES"] = str(cfg.train.visible_cuda_devices)
+        # os.environ["CUDA_VISIBLE_DEVICES"] = str(cfg.train.visible_cuda_devices)
         device = torch.device('cuda')
     log.info(f"training on device={device}")
 
@@ -242,8 +242,11 @@ def train(cfg: DictConfig) -> None:
         df = pd.DataFrame(results)
         df.to_csv(cfg.train.save_path, index=False)
 
-        log.info(f"Saving fine-tuned model to {output_dir}")
-        trainer.save_model(output_dir)
+        # log.info(f"Saving fine-tuned model to {output_dir}")
+        # trainer.save_model(output_dir)
+
+        log.info(f"Deleting fine-tuned model to {output_dir} to save space...")
+        delete_directory(output_dir)
 
 
 if __name__ == "__main__":

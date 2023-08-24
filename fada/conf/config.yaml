@@ -46,11 +46,12 @@ augment:
     force: False
 
 train:
-    num_runs: 1
+    num_runs: 3
     dataset_matcher: "${dataset.builder_name}.${dataset.config_name}.*"
     base_models: 
-        - "prajjwal1/bert-tiny"
-        - "bert-base-uncased"
+        # - "prajjwal1/bert-tiny"
+        # - "bert-base-uncased"
+        - "bert-large-uncased"
     num_epochs: 10
     logging_steps_per_epoch: 10
     early_stopping_patience: 10
@@ -59,10 +60,11 @@ train:
     eval_batch_size: 16
     learning_rate: 2e-5
     weight_decay: 0.01
-    visible_cuda_devices: "0,1"
+    visible_cuda_devices: "0,1,2,3"
     max_val_size: 250
+    max_test_size: 1000
     trained_models_dir: "./eval/pretrained"
-    save_path: "${results_dir}/${dataset.builder_name}.${dataset.config_name}.training.csv"
+    save_path: "${results_dir}/${dataset.builder_name}.${dataset.config_name}.training-post-review.csv"
 
 robustness:
     num_runs: 1

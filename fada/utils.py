@@ -5,6 +5,8 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import importlib
 from collections import Counter
+import os
+import shutil
 
 # helper functions
 
@@ -190,3 +192,20 @@ def replace_empty_text(dataset, replace_string = "<<empty>>"):
         lambda example: {**example, "text": replace_string} if example["text"] == "" or len(example["text"].strip().split()) == 0 else example
     )
     return dataset
+
+def clear_directory(dir_path):
+    for filename in os.listdir(dir_path):
+        file_path = os.path.join(dir_path, filename)
+        try:
+            if os.path.isfile(file_path) or os.path.islink(file_path):
+                os.unlink(file_path)
+            elif os.path.isdir(file_path):
+                shutil.rmtree(file_path)
+        except Exception as e:
+            print(f"Failed to delete {file_path}. Reason: {e}")
+
+def delete_directory(dir_path):
+    try:
+        shutil.rmtree(dir_path)
+    except Exception as e:
+        print(f"Failed to delete {dir_path}. Reason: {e}")
