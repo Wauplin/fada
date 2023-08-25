@@ -1,4 +1,4 @@
-python -m eval.train train.dataset_matcher=glue.sst2.*.10.* dataset.builder_name=glue dataset.config_name=sst2 train.visible_cuda_devices=0
-python -m eval.train train.dataset_matcher=imdb.plain_text.*.10.* dataset.builder_name=imdb dataset.config_name=plain_text train.visible_cuda_devices=1
-python -m eval.train train.dataset_matcher=ag_news.default.*.10.* dataset.builder_name=ag_news dataset.config_name=default train.visible_cuda_devices=2
-python -m eval.train train.dataset_matcher=yahoo_answers_topics.yahoo_answers_topics.*.10.* dataset.builder_name=yahoo_answers_topics dataset.config_name=yahoo_answers_topics train.visible_cuda_devices=3
+python -m eval.train train.dataset_matcher=glue.sst2.*.10 dataset.builder_name=glue dataset.config_name=sst2 train.visible_cuda_devices=0 train.save_path=./results/glue.sst2.bert-large-others.10.csv
+python -m eval.train train.dataset_matcher=imdb.plain_text.*.10 dataset.builder_name=imdb dataset.config_name=plain_text train.visible_cuda_devices=1 train.save_path=./results/imdb.plain_text.bert-large-others.10.csv
+python -m eval.train train.dataset_matcher=ag_news.default.*.10 dataset.builder_name=ag_news dataset.config_name=default train.visible_cuda_devices=2 train.save_path=./results/ag_news.default.bert-large-others.10.csv
+python -m eval.train train.dataset_matcher=yahoo_answers_topics.yahoo_answers_topics.*.10 dataset.builder_name=yahoo_answers_topics dataset.config_name=yahoo_answers_topics train.visible_cuda_devices=3 train.save_path=./results/yahoo_answers_topics.yahoo_answers_topics.bert-large-others.10.csv

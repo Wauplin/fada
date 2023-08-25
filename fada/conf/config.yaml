@@ -64,7 +64,7 @@ train:
     max_val_size: 250
     max_test_size: 1000
     trained_models_dir: "./eval/pretrained"
-    save_path: "${results_dir}/${dataset.builder_name}.${dataset.config_name}.training-post-review.csv"
+    save_path: "${results_dir}/${dataset.builder_name}.${dataset.config_name}.training-post-review-gen.csv"
 
 robustness:
     num_runs: 1
