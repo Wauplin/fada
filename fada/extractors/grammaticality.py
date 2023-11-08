@@ -3,6 +3,7 @@ import numpy as np
 
 from fada.utils import repeat_array
 
+
 class GrammarMetric:
     def __init__(self) -> None:
         """
@@ -36,7 +37,7 @@ class GrammarMetric:
         before_dataset, before_scores = self.evaluate(before_dataset)
         after_dataset, after_scores   = self.evaluate(after_dataset)
         before_scores = repeat_array(after_scores, before_scores)
-        scores = np.nan_to_num(after_scores / before_scores)
+        scores = np.nan_to_num(before_scores / after_scores)
         if annotate_after_dataset:
             if self.save_name in after_dataset.features:
                 after_dataset = after_dataset.remove_columns([self.save_name])
@@ -46,8 +47,8 @@ class GrammarMetric:
 
 if __name__ == '__main__':
     
-    from transform import Transform
-    from augmenter import Augmenter
+    from fada.transform import Transform
+    from fada.augmenter import Augmenter
     from datasets import load_dataset
     import sibyl
     import numpy as np
@@ -97,7 +98,7 @@ if __name__ == '__main__':
     print(f"diffed_grammar_scores (raw): {g_scores}")
     print(f"diffed_grammar_scores (mean): {g_scores.mean()}")
 
-    # (fada) C:\Users\fabri\Documents\GitHub\fada\src>python -m extractors.grammaticality
+    # (fada) C:\Users\fabri\Documents\GitHub\fada>python -m fada.extractors.grammaticality
     # original_dataset_details: Dataset({
     #     features: ['text', 'label', 'idx'],
     #     num_rows: 3
@@ -105,18 +106,16 @@ if __name__ == '__main__':
     # original_dataset_text: ['hide new secretions from the parental units ', 'contains no wit , only labored gags ', 'that loves its characters and communicates something rather beautiful about human nature ']
     # original_grammar_scores (raw): [1 2 1]
     # original_grammar_scores (mean): 1.3333333333333333
-    
     # augmented_dataset_details: Dataset({
     #     features: ['text', 'label', 'transforms_applied', 'is_changed'],
     #     num_rows: 3
     # })
-    # augmented_dataset_text: ['; hide ! new secretions from the parental units ', 'muzzle no jocosity , only labored funny ', 'that bed-hop its U and scrabble something rather beautiful about human pessimism ']
-    # augmented_grammar_scores (raw): [2 2 1]
-    # augmented_grammar_scores (mean): 1.6666666666666667
-    
+    # augmented_dataset_text: ['; hide ! new secretions from the parental units ', 'restrain no pun , only labored sidesplitter ', 'that romance its heth and recount something rather beautiful about human amiability ']
+    # augmented_grammar_scores (raw): [2 3 2]
+    # augmented_grammar_scores (mean): 2.3333333333333335
     # augmented_dataset_details: Dataset({
     #     features: ['text', 'label', 'transforms_applied', 'is_changed', 'grammar_score'],
     #     num_rows: 3
     # })
-    # diffed_grammar_scores (raw): [0.5 1.  1. ]
-    # diffed_grammar_scores (mean): 0.8333333333333334
+    # diffed_grammar_scores (raw): [0.5        0.66666667 0.5       ]
+    # diffed_grammar_scores (mean): 0.5555555555555555

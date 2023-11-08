@@ -6,6 +6,7 @@ from cleanlab.rank import get_label_quality_scores
 
 from fada.utils import vectorize, repeat_array
 
+
 class AlignmentMetric:
     """
     Use cleanlab to generate a label alignment score.  
@@ -122,7 +123,10 @@ if __name__ == '__main__':
         batch_size=batch_size)
     aug_dataset = uni_augmenter.augment()
 
-    a_metric = AlignmentMetric()
+    a_metric = AlignmentMetric(
+        builder_name=dataset_config[0], 
+        config_name=dataset_config[-1],
+        model_id="distilbert-base-uncased-finetuned-sst-2-english")
 
     dataset, a_scores = a_metric.evaluate(dataset)
     print(f"original_dataset_details: {dataset}")

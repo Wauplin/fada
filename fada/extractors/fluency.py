@@ -51,7 +51,7 @@ class FluencyMetric:
         before_dataset, before_scores = self.evaluate(before_dataset)
         after_dataset, after_scores   = self.evaluate(after_dataset)
         before_scores = repeat_array(after_scores, before_scores)
-        scores = np.nan_to_num(after_scores / before_scores)
+        scores = np.nan_to_num(before_scores / after_scores)
         if annotate_after_dataset:
             if self.save_name in after_dataset.features:
                 after_dataset = after_dataset.remove_columns([self.save_name])
@@ -113,26 +113,24 @@ if __name__ == '__main__':
     print(f"diffed_fluency_scores (raw): {f_scores}")
     print(f"diffed_fluency_scores (mean): {f_scores.mean()}")
 
-    # (fada) C:\Users\fabri\Documents\GitHub\fada>python -m fada.extractors.fluency
+    # (fada) C:\Users\fabri\Documents\GitHub\fada>python -m fada.extractors.fluency       
     # original_dataset_details: Dataset({
     #     features: ['text', 'label', 'idx'],
     #     num_rows: 3
     # })
     # original_dataset_text: ['hide new secretions from the parental units ', 'contains no wit , only labored gags ', 'that loves its characters and communicates something rather beautiful about human nature ']
-    # original_fluency_scores (raw): [2923.11279297  549.8616333   364.08105469]
-    # original_fluency_scores (mean): 1279.0184936523438
-    
+    # original_fluency_scores (raw): [2922.80078125  549.81390381  364.03036499]
+    # original_fluency_scores (mean): 1278.8816833496094
     # augmented_dataset_details: Dataset({
     #     features: ['text', 'label', 'transforms_applied', 'is_changed'],
     #     num_rows: 3
     # })
-    # augmented_dataset_text: ['; hide ! new secretions from the parental units ', 'muzzle no jocosity , only labored funny ', 'that bed-hop its U and scrabble something rather beautiful about human pessimism ']
-    # augmented_fluency_scores (raw): [6287.62597656 1760.31665039  858.51586914]
-    # augmented_fluency_scores (mean): 2968.8194986979165
-    
+    # augmented_dataset_text: ['cloak new noradrenaline from the parental IRS ', 'skirt no sketch , only labored riot ', 'that love its playacting and covenant something rather beautiful about human existence ']
+    # augmented_fluency_scores (raw): [2851.19750977 4112.43164062 1399.64941406]
+    # augmented_fluency_scores (mean): 2787.759521484375
     # augmented_dataset_details: Dataset({
     #     features: ['text', 'label', 'transforms_applied', 'is_changed', 'fluency_score'],
     #     num_rows: 3
     # })
-    # diffed_fluency_scores (raw): [0.46489928 0.31236518 0.42408192]
-    # diffed_fluency_scores (mean): 0.4004487933086877
+    # diffed_fluency_scores (raw): [1.0251134  0.13369557 0.26008682]
+    # diffed_fluency_scores (mean): 0.4729652651420713
