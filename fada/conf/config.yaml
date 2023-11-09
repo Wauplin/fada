@@ -29,9 +29,14 @@ fada:
     min_coverage: 128
     num_to_transform_per_step: 128
     max_iterations: 8
-    c_a: 0.7
-    c_f: 0.1
-    c_g: 0.2
+    c_a: 0.16667
+    c_f: 0.16667
+    c_g: 0.16667
+    c_div_sem: 0.1
+    c_div_syn: 0.1
+    c_div_mor: 0.1
+    c_div_ttr: 0.1
+    c_div_ubi: 0.1
     force: False
 
 augment:

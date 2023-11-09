@@ -1,10 +1,10 @@
 import os
-import importlib
 import glob
 import logging
 from tqdm import tqdm
 import torch
 import numpy as np
+import pandas as pd
 from scipy.special import softmax
 import hydra
 from omegaconf import DictConfig, OmegaConf
@@ -16,7 +16,12 @@ from fada.extractors import (
     AMRFeatureExtractor,
     AlignmentMetric,
     FluencyMetric,
-    GrammarMetric
+    GrammarMetric,
+    DocumentSemanticDiversity,
+    DocumentDependencyParseDiversity,
+    DocumentPartOfSpeechSequenceDiversity,
+    MATTRDiversity,
+    UniqueBigramsDiversity
 )
 from fada.augmenter import Augmenter
 from fada.utils import (
@@ -41,6 +46,7 @@ def fada_search(cfg: DictConfig) -> None:
     os.makedirs(cfg.dataset_dir, exist_ok=True)
     os.makedirs(cfg.amr_extractor.amr_dir, exist_ok=True)
     os.makedirs(cfg.fada.tfim_dir, exist_ok=True)
+    os.makedirs(cfg.quality.trial_dir, exist_ok=True)
 
     log.info("Loading & initializing transforms.")
     transforms = [load_class(t) for t in cfg.transforms]
@@ -66,13 +72,22 @@ def fada_search(cfg: DictConfig) -> None:
         amr_save_path=cfg.amr_extractor.amr_save_path,
         max_sent_len=cfg.amr_extractor.max_sent_len, 
         batch_size=cfg.amr_extractor.batch_size)
+    
+    # quality metrics
     a_metric = AlignmentMetric(
         builder_name=cfg.dataset.builder_name, 
         config_name=cfg.dataset.config_name,
         model_id=cfg.alignment_extractor.model_id)
     f_metric = FluencyMetric()
     g_metric = GrammarMetric()
-
+    
+    # diversity metrics
+    d_sem_metric = DocumentSemanticDiversity()
+    d_syn_metric = DocumentDependencyParseDiversity()
+    d_mor_metric = DocumentPartOfSpeechSequenceDiversity()
+    d_mtr_metric = MATTRDiversity()
+    d_ubi_metric = UniqueBigramsDiversity()
+    
     log.info("Loading dataset...")
     annotated_dataset_path = os.path.join(cfg.dataset_dir, f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.annotated")
     if os.path.exists(annotated_dataset_path):
@@ -112,12 +127,19 @@ def fada_search(cfg: DictConfig) -> None:
     alignment_scores = np.zeros((num_transforms, num_features))
     fluency_scores   = np.zeros((num_transforms, num_features))
     grammar_scores   = np.zeros((num_transforms, num_features))
+    sem_div_scores   = np.zeros((num_transforms, num_features))
+    syn_div_scores   = np.zeros((num_transforms, num_features))
+    mor_div_scores   = np.zeros((num_transforms, num_features))
+    mtr_div_scores   = np.zeros((num_transforms, num_features))
+    ubi_div_scores   = np.zeros((num_transforms, num_features))
     counts           = np.zeros((num_transforms, num_features))
     changes          = np.zeros((num_transforms, num_features))
     tfim             = np.full((num_transforms, num_features), fill_value=1/num_transforms)
 
     tfim_difference = np.inf
     convergence_threshold = 1 / (num_transforms + num_features)
+
+    trial_data = []
 
     i = 0
     while tfim_difference > convergence_threshold:
@@ -142,29 +164,74 @@ def fada_search(cfg: DictConfig) -> None:
             t_prob = np.zeros(num_transforms)
             t_prob[t] = 1
             transform_probabilities = np.array([t_prob for _ in range(f_dataset.num_rows)])
-            augmenter = Augmenter(dataset=f_dataset, 
-                        transforms=transforms,  
-                        transform_probabilities=transform_probabilities,
-                        num_augmentations_per_record=cfg.augment.num_augmentations_per_record,
-                        num_transforms_to_apply=cfg.augment.num_transforms_to_apply,
-                        batch_size=cfg.augment.batch_size, 
-                        keep_originals=False)
-            aug_dataset = augmenter.augment()
+            try:
+                augmenter = Augmenter(dataset=f_dataset, 
+                            transforms=transforms,  
+                            transform_probabilities=transform_probabilities,
+                            num_augmentations_per_record=cfg.augment.num_augmentations_per_record,
+                            num_transforms_to_apply=cfg.augment.num_transforms_to_apply,
+                            batch_size=cfg.augment.batch_size, 
+                            keep_originals=False)
+                aug_dataset = augmenter.augment()
+            except Exception as e:
+                log.error(e)
+                continue
 
             aug_dataset, a_scores = a_metric.evaluate_before_and_after(f_dataset, aug_dataset)
             aug_dataset, f_scores = f_metric.evaluate_before_and_after(f_dataset, aug_dataset)
             aug_dataset, g_scores = g_metric.evaluate_before_and_after(f_dataset, aug_dataset)
 
-            alignment_scores[t,f] = np.clip((alignment_scores[t,f] + a_scores.mean()) / 2, 0, 2)
-            fluency_scores[t,f]   = np.clip((fluency_scores[t,f]   + f_scores.mean()) / 2, 0, 2)
-            grammar_scores[t,f]   = np.clip((grammar_scores[t,f]   + g_scores.mean()) / 2, 0, 2)
+            a_score = a_scores.mean()
+            f_score = f_scores.mean()
+            g_score = g_scores.mean()
+
+            aug_dataset, sem_div = d_sem_metric.evaluate_before_and_after(f_dataset, aug_dataset)
+            aug_dataset, syn_div = d_syn_metric.evaluate_before_and_after(f_dataset, aug_dataset)
+            aug_dataset, mor_div = d_mor_metric.evaluate_before_and_after(f_dataset, aug_dataset)
+            aug_dataset, mtr_div = d_mtr_metric.evaluate_before_and_after(f_dataset, aug_dataset)
+            aug_dataset, ubi_div = d_ubi_metric.evaluate_before_and_after(f_dataset, aug_dataset)
+
+            alignment_scores[t,f] = np.clip((alignment_scores[t,f] + a_score) / 2, 0, 2)
+            fluency_scores[t,f]   = np.clip((fluency_scores[t,f]   + f_score) / 2, 0, 2)
+            grammar_scores[t,f]   = np.clip((grammar_scores[t,f]   + g_score) / 2, 0, 2)
+
+            sem_div_scores[t,f]   = np.clip((sem_div_scores[t,f]   + sem_div) / 2, 0, 2)
+            syn_div_scores[t,f]   = np.clip((syn_div_scores[t,f]   + syn_div) / 2, 0, 2)
+            mor_div_scores[t,f]   = np.clip((mor_div_scores[t,f]   + mor_div) / 2, 0, 2)
+            mtr_div_scores[t,f]   = np.clip((mtr_div_scores[t,f]   + mtr_div) / 2, 0, 2)
+            ubi_div_scores[t,f]   = np.clip((ubi_div_scores[t,f]   + ubi_div) / 2, 0, 2)
+
             counts[t,f]           += f_dataset.num_rows
             changes[t,f]          += np.array(aug_dataset["is_changed"]).sum()
+
+            trial_data.append({
+                "trial_num": i, 
+                "transform": t,
+                "feature": f, 
+                "builder_name": cfg.dataset.builder_name, 
+                "config_name": cfg.dataset.config_name,
+                "model_id": cfg.alignment_extractor.model_id,
+                "dataset_size": len(f_dataset),
+                "alignment_score": a_score,
+                "fluency_score": f_score,
+                "grammaticality_score": g_score,
+                "semantic_diversity": sem_div,
+                "syntactic_diversity": syn_div,
+                "morphological_diversity": mor_div,
+                "mattr_diversity": mtr_div,
+                "unique_bigram_diversity": ubi_div
+            })
 
         # compute tfim-augment
         aggregated_performance = (cfg.fada.c_a * alignment_scores) + \
                                  (cfg.fada.c_f * fluency_scores) + \
-                                 (cfg.fada.c_g * grammar_scores)
+                                 (cfg.fada.c_g * grammar_scores) + \
+                                 (cfg.fada.c_div_sem * sem_div_scores) + \
+                                 (cfg.fada.c_div_syn * syn_div_scores) + \
+                                 (cfg.fada.c_div_mor * mor_div_scores) + \
+                                 (cfg.fada.c_div_mtr * mtr_div_scores) + \
+                                 (cfg.fada.c_div_ubi * ubi_div_scores)
+        
         applicability_rate     = np.nan_to_num(changes / counts, 0)
         new_tfim               = softmax(applicability_rate * aggregated_performance, axis=0)
         tfim_difference        = np.linalg.norm(new_tfim - tfim)
@@ -181,12 +248,23 @@ def fada_search(cfg: DictConfig) -> None:
         np.save(os.path.join(cfg.fada.tfim_dir, f"{save_name}.alignment-step-{i}"), alignment_scores)
         np.save(os.path.join(cfg.fada.tfim_dir, f"{save_name}.fluency-step-{i}"), fluency_scores)
         np.save(os.path.join(cfg.fada.tfim_dir, f"{save_name}.grammar-step-{i}"), grammar_scores)
+        np.save(os.path.join(cfg.fada.tfim_dir, f"{save_name}.div_sem-step-{i}"), sem_div_scores)
+        np.save(os.path.join(cfg.fada.tfim_dir, f"{save_name}.div_syn-step-{i}"), syn_div_scores)
+        np.save(os.path.join(cfg.fada.tfim_dir, f"{save_name}.div_mor-step-{i}"), mor_div_scores)
+        np.save(os.path.join(cfg.fada.tfim_dir, f"{save_name}.div_mtr-step-{i}"), mtr_div_scores)
+        np.save(os.path.join(cfg.fada.tfim_dir, f"{save_name}.div_ubi-step-{i}"), ubi_div_scores)
         np.save(os.path.join(cfg.fada.tfim_dir, f"{save_name}.tfim-step-{i}"), tfim)
 
         i += 1
         
         if i > cfg.fada.max_iterations:
             break
+
+    log.info(f"Saving intermediate trial information for the quality study")
+    save_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.fada{num_transforms}.trial_data.csv"
+    save_path = os.path.join(cfg.quality.trial_dir, save_name)
+    df = pd.DataFrame(trial_data)
+    df.to_csv(save_path, index=False)
     
     log.info(f"FADA policy generation for {cfg.dataset.builder_name}.{cfg.dataset.config_name} complete!")
 
