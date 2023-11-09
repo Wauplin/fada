@@ -10,6 +10,8 @@ tensorflow
 tensorflow_hub
 lexical_diversity
 
+# PYTHON=3.9
+
 # python -m spacy download en_core_web_sm
 # pip install git+https://github.com/boudinfl/pke.git
 # python -c "from textdiversity import AMR; AMR()"

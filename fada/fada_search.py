@@ -94,6 +94,8 @@ def fada_search(cfg: DictConfig) -> None:
         log.info(f"Found existing feature annotated dataset @ {annotated_dataset_path}!")
         dataset = load_from_disk(annotated_dataset_path)
         features = np.array(dataset["features"])
+        if "preds" in dataset.column_names:
+            dataset = dataset.remove_columns("preds")
     else:
         log.info(f"Could not find existing dataset with feature annotations, generating one and saving @ {annotated_dataset_path}!\nThis may take a while...")
         raw_datasets = load_dataset(cfg.dataset.builder_name, 
@@ -185,11 +187,11 @@ def fada_search(cfg: DictConfig) -> None:
             f_score = f_scores.mean()
             g_score = g_scores.mean()
 
-            aug_dataset, sem_div = d_sem_metric.evaluate_before_and_after(f_dataset, aug_dataset)
-            aug_dataset, syn_div = d_syn_metric.evaluate_before_and_after(f_dataset, aug_dataset)
-            aug_dataset, mor_div = d_mor_metric.evaluate_before_and_after(f_dataset, aug_dataset)
-            aug_dataset, mtr_div = d_mtr_metric.evaluate_before_and_after(f_dataset, aug_dataset)
-            aug_dataset, ubi_div = d_ubi_metric.evaluate_before_and_after(f_dataset, aug_dataset)
+            aug_dataset, sem_div  = d_sem_metric.evaluate_before_and_after(f_dataset, aug_dataset)
+            aug_dataset, syn_div  = d_syn_metric.evaluate_before_and_after(f_dataset, aug_dataset)
+            aug_dataset, mor_div  = d_mor_metric.evaluate_before_and_after(f_dataset, aug_dataset)
+            aug_dataset, mtr_div  = d_mtr_metric.evaluate_before_and_after(f_dataset, aug_dataset)
+            aug_dataset, ubi_div  = d_ubi_metric.evaluate_before_and_after(f_dataset, aug_dataset)
 
             alignment_scores[t,f] = np.clip((alignment_scores[t,f] + a_score) / 2, 0, 2)
             fluency_scores[t,f]   = np.clip((fluency_scores[t,f]   + f_score) / 2, 0, 2)
@@ -221,6 +223,8 @@ def fada_search(cfg: DictConfig) -> None:
                 "mattr_diversity": mtr_div,
                 "unique_bigram_diversity": ubi_div
             })
+
+            print(trial_data)
 
         # compute tfim-augment
         aggregated_performance = (cfg.fada.c_a * alignment_scores) + \
@@ -255,17 +259,17 @@ def fada_search(cfg: DictConfig) -> None:
         np.save(os.path.join(cfg.fada.tfim_dir, f"{save_name}.div_ubi-step-{i}"), ubi_div_scores)
         np.save(os.path.join(cfg.fada.tfim_dir, f"{save_name}.tfim-step-{i}"), tfim)
 
+        log.info(f"Saving intermediate trial information for the quality study")
+        save_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.fada{num_transforms}.trial_data.csv"
+        save_path = os.path.join(cfg.quality.trial_dir, save_name)
+        df = pd.DataFrame(trial_data)
+        df.to_csv(save_path, index=False)
+
         i += 1
         
         if i > cfg.fada.max_iterations:
             break
 
-    log.info(f"Saving intermediate trial information for the quality study")
-    save_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.fada{num_transforms}.trial_data.csv"
-    save_path = os.path.join(cfg.quality.trial_dir, save_name)
-    df = pd.DataFrame(trial_data)
-    df.to_csv(save_path, index=False)
-    
     log.info(f"FADA policy generation for {cfg.dataset.builder_name}.{cfg.dataset.config_name} complete!")
 
 if __name__ == "__main__":
