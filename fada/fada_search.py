@@ -8,6 +8,7 @@ import pandas as pd
 from scipy.special import softmax
 import hydra
 from omegaconf import DictConfig, OmegaConf
+import time
 
 from datasets import load_dataset, load_from_disk
 
@@ -142,7 +143,6 @@ def fada_search(cfg: DictConfig) -> None:
     convergence_threshold = 1 / (num_transforms + num_features)
 
     trial_data = []
-
     i = 0
     while tfim_difference > convergence_threshold:
 
@@ -179,19 +179,36 @@ def fada_search(cfg: DictConfig) -> None:
                 log.error(e)
                 continue
 
+            
+            a_start_time = time.time()
             aug_dataset, a_scores = a_metric.evaluate_before_and_after(f_dataset, aug_dataset)
+            a_time = time.time() - a_start_time
+            f_start_time = time.time()
             aug_dataset, f_scores = f_metric.evaluate_before_and_after(f_dataset, aug_dataset)
+            f_time = time.time() - f_start_time
+            g_start_time = time.time()
             aug_dataset, g_scores = g_metric.evaluate_before_and_after(f_dataset, aug_dataset)
+            g_time = time.time() - g_start_time
 
             a_score = a_scores.mean()
             f_score = f_scores.mean()
             g_score = g_scores.mean()
-
+            
+            sem_start_time = time.time()
             aug_dataset, sem_div  = d_sem_metric.evaluate_before_and_after(f_dataset, aug_dataset)
+            sem_time = time.time() - sem_start_time
+            syn_start_time = time.time()
             aug_dataset, syn_div  = d_syn_metric.evaluate_before_and_after(f_dataset, aug_dataset)
+            syn_time = time.time() - syn_start_time
+            mor_start_time = time.time()
             aug_dataset, mor_div  = d_mor_metric.evaluate_before_and_after(f_dataset, aug_dataset)
+            mor_time = time.time() - mor_start_time
+            mtr_start_time = time.time()
             aug_dataset, mtr_div  = d_mtr_metric.evaluate_before_and_after(f_dataset, aug_dataset)
+            mtr_time = time.time() - mtr_start_time
+            ubi_start_time = time.time()
             aug_dataset, ubi_div  = d_ubi_metric.evaluate_before_and_after(f_dataset, aug_dataset)
+            ubi_time = time.time() - ubi_start_time
 
             alignment_scores[t,f] = np.clip((alignment_scores[t,f] + a_score) / 2, 0, 2)
             fluency_scores[t,f]   = np.clip((fluency_scores[t,f]   + f_score) / 2, 0, 2)
@@ -206,7 +223,7 @@ def fada_search(cfg: DictConfig) -> None:
             counts[t,f]           += f_dataset.num_rows
             changes[t,f]          += np.array(aug_dataset["is_changed"]).sum()
 
-            trial_data.append({
+            trial_out = {
                 "trial_num": i, 
                 "transform": t,
                 "feature": f, 
@@ -221,10 +238,18 @@ def fada_search(cfg: DictConfig) -> None:
                 "syntactic_diversity": syn_div,
                 "morphological_diversity": mor_div,
                 "mattr_diversity": mtr_div,
-                "unique_bigram_diversity": ubi_div
-            })
-
-            print(trial_data)
+                "unique_bigram_diversity": ubi_div,
+                "a_time": a_time,
+                "f_time": f_time,
+                "g_time": g_time,
+                "sem_time": sem_time,
+                "syn_time": syn_time,
+                "mor_time": mor_time,
+                "mtr_time": mtr_time,
+                "ubi_time": ubi_time,
+            }
+            log.info(trial_out)
+            trial_data.append(trial_out)
 
         # compute tfim-augment
         aggregated_performance = (cfg.fada.c_a * alignment_scores) + \
