@@ -136,7 +136,7 @@ class Augmenter:
             
                                                    
     def augment(self):
-        dataset = self.dataset.map(self.apply_to_batch, batched=True, batch_size=self.batch_size)
+        dataset = self.dataset.map(self.apply_to_batch, batched=True, batch_size=self.batch_size, remove_columns=self.dataset.column_names)
         dataset = dataset.remove_columns("idx")
     
         # feature extraction

@@ -9,6 +9,7 @@ from scipy.special import softmax
 import hydra
 from omegaconf import DictConfig, OmegaConf
 import time
+import traceback 
 
 from datasets import load_dataset, load_from_disk
 
@@ -29,7 +30,8 @@ from fada.utils import (
     load_class,
     policy_heatmap, 
     prepare_splits,
-    rename_text_columns
+    rename_text_columns,
+    remove_unused_columns_from_dataset
 )
 from fada.filters import balance_dataset
 
@@ -121,6 +123,9 @@ def fada_search(cfg: DictConfig) -> None:
         features = feature_extractor(dataset["text"])
         dataset = dataset.add_column("features", [f for f in features])
         dataset.save_to_disk(annotated_dataset_path)
+    
+    dataset = remove_unused_columns_from_dataset(dataset)
+
     log.info(dataset)
 
     log.info("Beginning FADA search procedure...")
@@ -176,6 +181,7 @@ def fada_search(cfg: DictConfig) -> None:
                             keep_originals=False)
                 aug_dataset = augmenter.augment()
             except Exception as e:
+                traceback.print_exc()
                 log.error(e)
                 continue
 
