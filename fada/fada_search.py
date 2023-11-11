@@ -166,6 +166,7 @@ def fada_search(cfg: DictConfig) -> None:
             t_prob = np.zeros(num_transforms)
             t_prob[t] = 1
             transform_probabilities = np.array([t_prob for _ in range(f_dataset.num_rows)])
+            aug_start_time = time.time()
             try:
                 augmenter = Augmenter(dataset=f_dataset, 
                             transforms=transforms,  
@@ -178,7 +179,7 @@ def fada_search(cfg: DictConfig) -> None:
             except Exception as e:
                 log.error(e)
                 continue
-
+            aug_time = time.time() - aug_start_time
             
             a_start_time = time.time()
             aug_dataset, a_scores = a_metric.evaluate_before_and_after(f_dataset, aug_dataset)
@@ -239,6 +240,7 @@ def fada_search(cfg: DictConfig) -> None:
                 "morphological_diversity": mor_div,
                 "mattr_diversity": mtr_div,
                 "unique_bigram_diversity": ubi_div,
+                "aug_time": aug_time,
                 "a_time": a_time,
                 "f_time": f_time,
                 "g_time": g_time,
@@ -247,6 +249,7 @@ def fada_search(cfg: DictConfig) -> None:
                 "mor_time": mor_time,
                 "mtr_time": mtr_time,
                 "ubi_time": ubi_time,
+                "total_time": aug_time + a_time + f_time + g_time + sem_time + syn_time + mor_time + mtr_time + ubi_time
             }
             log.info(trial_out)
             trial_data.append(trial_out)
