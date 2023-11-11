@@ -256,6 +256,12 @@ def fada_search(cfg: DictConfig) -> None:
             }
             log.info(trial_out)
             trial_data.append(trial_out)
+            
+            log.info(f"Saving intermediate trial information for the quality study")
+            save_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.fada{num_transforms}.trial_data.csv"
+            save_path = os.path.join(cfg.quality.trial_dir, save_name)
+            df = pd.DataFrame(trial_data)
+            df.to_csv(save_path, index=False)
 
         # compute tfim-augment
         aggregated_performance = (cfg.fada.c_a * alignment_scores) + \
@@ -289,12 +295,6 @@ def fada_search(cfg: DictConfig) -> None:
         np.save(os.path.join(cfg.fada.tfim_dir, f"{save_name}.div_mtr-step-{i}"), mtr_div_scores)
         np.save(os.path.join(cfg.fada.tfim_dir, f"{save_name}.div_ubi-step-{i}"), ubi_div_scores)
         np.save(os.path.join(cfg.fada.tfim_dir, f"{save_name}.tfim-step-{i}"), tfim)
-
-        log.info(f"Saving intermediate trial information for the quality study")
-        save_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.fada{num_transforms}.trial_data.csv"
-        save_path = os.path.join(cfg.quality.trial_dir, save_name)
-        df = pd.DataFrame(trial_data)
-        df.to_csv(save_path, index=False)
 
         i += 1
         
