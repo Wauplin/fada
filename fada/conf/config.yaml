@@ -35,7 +35,7 @@ fada:
     c_div_sem: 0.1
     c_div_syn: 0.1
     c_div_mor: 0.1
-    c_div_ttr: 0.1
+    c_div_mtr: 0.1
     c_div_ubi: 0.1
     force: False
 
