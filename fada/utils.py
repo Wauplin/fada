@@ -140,6 +140,11 @@ def remove_unused_columns(dataset_dict):
         dataset_dict[split_name] = dataset.remove_columns([c for c in dataset.features.keys() if c not in keep_cols])
     return dataset_dict
 
+def remove_unused_columns_from_dataset(dataset):
+    keep_cols = ['text', 'label', 'idx', 'id', 'features']
+    dataset = dataset.remove_columns([c for c in dataset.features.keys() if c not in keep_cols])
+    return dataset
+
 class ConfiguredMetric:
     def __init__(self, metric, *metric_args, **metric_kwargs):
         self.metric = metric

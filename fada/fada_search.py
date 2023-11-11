@@ -9,6 +9,7 @@ from scipy.special import softmax
 import hydra
 from omegaconf import DictConfig, OmegaConf
 import time
+import traceback 
 
 from datasets import load_dataset, load_from_disk
 
@@ -29,7 +30,8 @@ from fada.utils import (
     load_class,
     policy_heatmap, 
     prepare_splits,
-    rename_text_columns
+    rename_text_columns,
+    remove_unused_columns_from_dataset
 )
 from fada.filters import balance_dataset
 
@@ -121,6 +123,9 @@ def fada_search(cfg: DictConfig) -> None:
         features = feature_extractor(dataset["text"])
         dataset = dataset.add_column("features", [f for f in features])
         dataset.save_to_disk(annotated_dataset_path)
+    
+    dataset = remove_unused_columns_from_dataset(dataset)
+
     log.info(dataset)
 
     log.info("Beginning FADA search procedure...")
@@ -177,6 +182,7 @@ def fada_search(cfg: DictConfig) -> None:
                             keep_originals=False)
                 aug_dataset = augmenter.augment()
             except Exception as e:
+                traceback.print_exc()
                 log.error(e)
                 continue
             aug_time = time.time() - aug_start_time
@@ -253,6 +259,12 @@ def fada_search(cfg: DictConfig) -> None:
             }
             log.info(trial_out)
             trial_data.append(trial_out)
+            
+            log.info(f"Saving intermediate trial information for the quality study")
+            save_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.fada{num_transforms}.trial_data.csv"
+            save_path = os.path.join(cfg.quality.trial_dir, save_name)
+            df = pd.DataFrame(trial_data)
+            df.to_csv(save_path, index=False)
 
         # compute tfim-augment
         aggregated_performance = (cfg.fada.c_a * alignment_scores) + \
@@ -286,12 +298,6 @@ def fada_search(cfg: DictConfig) -> None:
         np.save(os.path.join(cfg.fada.tfim_dir, f"{save_name}.div_mtr-step-{i}"), mtr_div_scores)
         np.save(os.path.join(cfg.fada.tfim_dir, f"{save_name}.div_ubi-step-{i}"), ubi_div_scores)
         np.save(os.path.join(cfg.fada.tfim_dir, f"{save_name}.tfim-step-{i}"), tfim)
-
-        log.info(f"Saving intermediate trial information for the quality study")
-        save_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.fada{num_transforms}.trial_data.csv"
-        save_path = os.path.join(cfg.quality.trial_dir, save_name)
-        df = pd.DataFrame(trial_data)
-        df.to_csv(save_path, index=False)
 
         i += 1
         
