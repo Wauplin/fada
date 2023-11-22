@@ -41,3 +41,15 @@ python -m fada.fada_augment dataset.builder_name=yahoo_answers_topics dataset.co
 python -m eval.train dataset.builder_name=yahoo_answers_topics dataset.config_name=yahoo_answers_topics
 
 python -m eval.robustness dataset.builder_name=yahoo_answers_topics dataset.config_name=yahoo_answers_topics
+
+# sst5 
+python -m fada.fada_search dataset.builder_name=SetFit/sst5 dataset.config_name=default dataset.text_key=text dataset.task_name=topic amr_extractor.max_sent_len=128 amr_extractor.batch_size=4 alignment_extractor.model_id=SetFit/distilbert-base-uncased__sst5__all-train
+
+# trec 
+python -m fada.fada_search dataset.builder_name=trec dataset.config_name=default dataset.text_key=text dataset.label_key=coarse_label dataset.task_name=topic amr_extractor.max_sent_len=128 amr_extractor.batch_size=4 alignment_extractor.model_id=aychang/bert-base-cased-trec-coarse
+
+# yelp_polarity 
+python -m fada.fada_search dataset.builder_name=yelp_polarity dataset.config_name=plain_text dataset.text_key=text dataset.task_name=topic amr_extractor.max_sent_len=256 amr_extractor.batch_size=4 alignment_extractor.model_id=textattack/bert-base-uncased-yelp-polarity dataset.max_size=10000
+
+# yelp_review_full 
+python -m fada.fada_search dataset.builder_name=yelp_review_full dataset.config_name=yelp_review_full dataset.text_key=text dataset.task_name=topic amr_extractor.max_sent_len=256 amr_extractor.batch_size=4 alignment_extractor.model_id=Ramamurthi/distilbert-base-uncased-finetuned-yelp-reviews dataset.max_size=10000

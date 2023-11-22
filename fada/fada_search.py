@@ -92,7 +92,8 @@ def fada_search(cfg: DictConfig) -> None:
     d_ubi_metric = UniqueBigramsDiversity()
     
     log.info("Loading dataset...")
-    annotated_dataset_path = os.path.join(cfg.dataset_dir, f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.annotated")
+    annotated_dataset_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.annotated".replace("/", ".")
+    annotated_dataset_path = os.path.join(cfg.dataset_dir, annotated_dataset_name)
     if os.path.exists(annotated_dataset_path):
         log.info(f"Found existing feature annotated dataset @ {annotated_dataset_path}!")
         dataset = load_from_disk(annotated_dataset_path)
@@ -108,6 +109,8 @@ def fada_search(cfg: DictConfig) -> None:
         dataset = raw_datasets["train"]
         if cfg.dataset.text_key != "text" and cfg.dataset.text_key in dataset.features.keys():
             dataset = dataset.rename_column(cfg.dataset.text_key, "text")
+        if cfg.dataset.label_key != "label" and cfg.dataset.text_key in dataset.features.keys():
+            dataset = dataset.rename_column(cfg.dataset.label_key, "label")
 
         if dataset.num_rows > cfg.dataset.max_size:
             log.info(f"Dataset size is larger than dataset.max_size={cfg.dataset.max_size}")
@@ -261,7 +264,7 @@ def fada_search(cfg: DictConfig) -> None:
             trial_data.append(trial_out)
             
             log.info(f"Saving intermediate trial information for the quality study")
-            save_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.fada{num_transforms}.trial_data.csv"
+            save_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.fada{num_transforms}.trial_data.csv".replace("/", ".")
             save_path = os.path.join(cfg.quality.trial_dir, save_name)
             df = pd.DataFrame(trial_data)
             df.to_csv(save_path, index=False)
@@ -286,7 +289,7 @@ def fada_search(cfg: DictConfig) -> None:
         policy_heatmap(tfim, transforms, feature_extractor.featurizers)
 
         log.info("Saving intermediate matrices...")
-        save_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.fada{num_transforms}"
+        save_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.fada{num_transforms}".replace("/", ".")
         np.save(os.path.join(cfg.fada.tfim_dir, f"{save_name}.counts-step-{i}"), counts)
         np.save(os.path.join(cfg.fada.tfim_dir, f"{save_name}.changes-step-{i}"), changes)
         np.save(os.path.join(cfg.fada.tfim_dir, f"{save_name}.alignment-step-{i}"), alignment_scores)

@@ -11,10 +11,15 @@ from datasets import load_dataset, load_from_disk
 
 from fada.utils import *
 from fada.extractors import (
-    PerformanceExtractor,
+    AMRFeatureExtractor,
     AlignmentMetric,
+    FluencyMetric,
     GrammarMetric,
-    FluencyMetric
+    DocumentSemanticDiversity,
+    DocumentDependencyParseDiversity,
+    DocumentPartOfSpeechSequenceDiversity,
+    MATTRDiversity,
+    UniqueBigramsDiversity
 )
 from fada.filters import balance_dataset
 
@@ -43,7 +48,7 @@ def quality(cfg: DictConfig):
     if torch.cuda.is_available():
         os.environ["CUDA_VISIBLE_DEVICES"] = str(cfg.train.visible_cuda_devices)
         device = torch.device('cuda')
-    log.info(f"ealuating quality on device={device}")
+    log.info(f"evaluating quality on device={device}")
 
     #############################################################
     ## Search for datasets ######################################
@@ -97,7 +102,7 @@ def quality(cfg: DictConfig):
         num_labels = len(np.unique(evaluation_dataset["label"]))
         
         if len(evaluation_dataset) > cfg.quality.max_dataset_size:
-            log.info("Triming down dataset dataset...")
+            log.info("Trimming down dataset dataset...")
             num_per_class = cfg.quality.max_dataset_size // num_labels
             evaluation_dataset = balance_dataset(evaluation_dataset, num_per_class)
 
@@ -132,13 +137,24 @@ def quality(cfg: DictConfig):
         #############################################################
         
         log.info("Initializing metric extractors...")
-        perf_extractor = PerformanceExtractor(model=model, tokenizer=tokenizer)
+
+        # quality metrics
         a_metric = AlignmentMetric(
             builder_name=cfg.dataset.builder_name, 
             config_name=cfg.dataset.config_name,
             model_id=cfg.quality.model_id)
         f_metric = FluencyMetric()
         g_metric = GrammarMetric()
+        
+        # diversity metrics
+        d_sem_metric = DocumentSemanticDiversity()
+        d_syn_metric = DocumentDependencyParseDiversity()
+        d_mor_metric = DocumentPartOfSpeechSequenceDiversity()
+        d_mtr_metric = MATTRDiversity()
+        d_ubi_metric = UniqueBigramsDiversity()
+
+        # performance metric
+        perf_extractor = PerformanceExtractor(model=model, tokenizer=tokenizer)
 
         #############################################################
         ## Quality Evaluations ######################################

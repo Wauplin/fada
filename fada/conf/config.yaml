@@ -20,6 +20,7 @@ dataset:
     builder_name: "glue"
     config_name: "sst2"
     text_key: "text"
+    label_key: "label"
     task_name: "sentiment"
     num_per_class: "infer" # 10, 200, 2500, "min", "infer"
     max_size: 100000
@@ -88,5 +89,5 @@ quality:
     trial_dir: "${working_dir}/trial_data"
     dataset_matcher: "${dataset.builder_name}.${dataset.config_name}.*"
     model_id: "${alignment_extractor.model_id}"
-    max_dataset_size: 1000
+    max_dataset_size: 100
     save_path: "${results_dir}/${dataset.builder_name}.${dataset.config_name}.quality.csv"
