@@ -241,6 +241,7 @@ def fada_search(cfg: DictConfig) -> None:
                 "config_name": cfg.dataset.config_name,
                 "model_id": cfg.alignment_extractor.model_id,
                 "dataset_size": len(f_dataset),
+                "percent_changed": np.array(aug_dataset["is_changed"]).sum() / len(aug_dataset),
                 "alignment_score": a_score,
                 "fluency_score": f_score,
                 "grammaticality_score": g_score,
