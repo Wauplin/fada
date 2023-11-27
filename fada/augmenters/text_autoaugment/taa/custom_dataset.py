@@ -2,6 +2,15 @@ from torch.utils.data import Dataset
 from theconf import Config as C
 from transformers.data.processors.utils import InputFeatures
 
+def flatten_list(nested_list):
+    """ Flatten a nested list structure """
+    for element in nested_list:
+        if isinstance(element, list):
+            # If the element is a list, extend the flat list with the flattened element
+            yield from flatten_list(element)
+        else:
+            # If the element is not a list, add it to the flat list
+            yield element
 
 class general_dataset(Dataset):
     def __init__(self, examples, tokenizer, text_transform=None):
@@ -10,6 +19,7 @@ class general_dataset(Dataset):
         self.texts = [d.text_a for d in examples]
         self.texts = [" ".join(t.split()[:max_seq_length]) if len(t.split()) > max_seq_length else t
                       for t in self.texts]  # clip texts
+        
         self.labels = [d.label if d.label >= 0 else d.label + 1 for d in examples]
         self.aug_n_dist = 0
 
@@ -17,6 +27,7 @@ class general_dataset(Dataset):
             texts_aug, labels_aug, n_dist = text_transform(self.texts, self.labels)
             assert len(texts_aug) == len(labels_aug)
             self.texts = texts_aug
+            self.texts = list(flatten_list(self.texts))
             self.labels = labels_aug
             self.aug_n_dist = n_dist
 

@@ -2,6 +2,18 @@ import os
 import subprocess
 import yaml
 import tempfile
+from datasets import Dataset, concatenate_datasets
+
+def create_huggingface_dataset_from_general_dataset(general_dataset_instance):
+    # Extract texts and labels from the general_dataset instance
+    texts = general_dataset_instance.texts
+    labels = general_dataset_instance.labels
+
+    # Prepare data in the format required by Hugging Face datasets
+    data = {"text": texts, "label": labels}
+
+    # Create and return a Hugging Face Dataset
+    return Dataset.from_dict(data)
 
 class TextAutoAugmenter:
     def __init__(self):
@@ -50,7 +62,7 @@ class TextAutoAugmenter:
 
         # Save the dataset
         file_name = f"{name}.original.csv"
-        dataset_path = self.save_dataset(dataset, save_path, file_name=file_name)
+        # dataset_path = self.save_dataset(dataset, save_path, file_name=file_name)
 
         config_params = {
             'model': {'type': 'Bert'},
@@ -91,30 +103,21 @@ class TextAutoAugmenter:
 
         # Perform augmentation
         augmented_dataset = augment_with_presearched_policy(dataset, configfile=config_file_path)
+        augmented_dataset = create_huggingface_dataset_from_general_dataset(augmented_dataset)
+        augmented_dataset = augmented_dataset.cast(dataset.features)
+        augmented_dataset = concatenate_datasets([dataset, augmented_dataset])
 
         # Clean up the temporary file
         os.remove(config_file_path)
-        os.remove(dataset_path)
 
         return augmented_dataset
-
-        # assert name in list(policy_map.keys()), f"No policy was found for this dataset. Must be one of {','.join(list(policy_map.keys()))}"
-        # policy = policy_map[name]
-        # augmented_train_dataset = augment(dataset=dataset, policy=policy, n_aug=num_aug)
-        
-        # self.run_command(f"conda deactivate")
-        # self.run_command(f"conda activate fada")
-
-        # return augmented_dataset
-
-# Usage
 
 if __name__ == "__main__":
     from datasets import load_dataset
     
     augmenter = TextAutoAugmenter()
 
-    dataset = load_dataset("imdb", split="train").select(range(100))
+    dataset = load_dataset("imdb", split="train").select(range(1000))
     print(dataset)
 
     aug_dataset = augmenter(dataset, name="imdb", num_aug=3)
