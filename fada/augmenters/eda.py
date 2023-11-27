@@ -1,6 +1,7 @@
 import os
 import subprocess
 import csv
+from datasets import load_dataset
 
 class EDANLPAugmentor:
     def __init__(self):
@@ -51,8 +52,6 @@ class EDANLPAugmentor:
         return aug_dataset
 
 if __name__ == "__main__":
-    from datasets import load_dataset
-    
     augmenter = EDANLPAugmentor()
 
     dataset = load_dataset("glue", "sst2", split="train")

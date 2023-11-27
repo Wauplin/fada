@@ -30,13 +30,25 @@ class FADAAugmenter:
         self.tfim = tfim
         self.cfg = cfg
 
+        if tfim is None:
+            self.reweight_tfim({
+                'alignment': cfg.fada.c_a,
+                'fluency': cfg.fada.c_f,
+                'grammar': cfg.fada.c_g,
+                'div_sem': cfg.fada.c_div_sem,
+                'div_syn': cfg.fada.c_div_syn,
+                'div_mor': cfg.fada.c_div_mor,
+                'div_mtr': cfg.fada.c_div_mtr,
+                'div_ubi': cfg.fada.c_div_ubi,
+            })
+
     def reweight_tfim(self, weights : dict):
 
-        tfim_matcher = os.path.join(cfg.fada.tfim_dir, f"{cfg.augment.tfim_dataset_builder_name}.{cfg.augment.tfim_dataset_config_name}*")
+        tfim_matcher = os.path.join(self.cfg.fada.tfim_dir, f"{self.cfg.augment.tfim_dataset_builder_name}.{self.cfg.augment.tfim_dataset_config_name}*")
         matrix_paths = glob.glob(tfim_matcher)
         max_id = int(max([m.split("-")[-1].split(".")[0] for m in matrix_paths]))
 
-        save_name = f"{cfg.augment.tfim_dataset_builder_name}.{cfg.augment.tfim_dataset_config_name}.fada20"
+        save_name = f"{self.cfg.augment.tfim_dataset_builder_name}.{self.cfg.augment.tfim_dataset_config_name}.fada20"
 
         counts    = np.load(os.path.join(self.cfg.fada.tfim_dir, f"{save_name}.counts-step-{max_id}.npy"))
         changes   = np.load(os.path.join(self.cfg.fada.tfim_dir, f"{save_name}.changes-step-{max_id}.npy"))
@@ -63,9 +75,8 @@ class FADAAugmenter:
         return self.tfim
 
 
-    def __call__(self, dataset, num_aug=3, num_transforms_to_apply=1, batch_size=8, keep_originals=True):
+    def __call__(self, dataset, features=None, num_aug=3, num_transforms_to_apply=1, batch_size=8, keep_originals=True):
 
-        features = np.array(dataset["features"])
         policy_probabilities = implement_policy_probabilities(self.tfim, features)
 
         augmenter = Augmenter(dataset=dataset, 

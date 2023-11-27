@@ -47,14 +47,6 @@ class TextAutoAugmenter:
 
             # Download NLTK models
             self.run_command("python -c \"import nltk; nltk.download('wordnet'); nltk.download('averaged_perceptron_tagger'); nltk.download('omw-1.4')\"")
-    
-    def save_dataset(self, dataset, save_path, file_name='dataset'):
-        """Save a HuggingFace dataset to a specified location."""
-        if not os.path.exists(save_path):
-            os.makedirs(save_path)
-        dataset_path = os.path.join(save_path, file_name)
-        dataset.to_csv(dataset_path, index=False)
-        return dataset_path
 
     def __call__(self, dataset, name, save_path="./temp", num_aug=3):
 
@@ -62,7 +54,6 @@ class TextAutoAugmenter:
 
         # Save the dataset
         file_name = f"{name}.original.csv"
-        # dataset_path = self.save_dataset(dataset, save_path, file_name=file_name)
 
         config_params = {
             'model': {'type': 'Bert'},
