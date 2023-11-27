@@ -18,7 +18,7 @@ class EDANLPAugmentor:
     def hf_dataset_to_tsv(self, dataset, save_path=None):
         if not save_path:
             save_path = os.path.join(self.augmenter_directory,
-                                     f"{dataset.builder_name}.{dataset.config_name}.temp.original.tsv")
+                                     f"{dataset.builder_name}.{dataset.config_name}.temp.original.tsv".replace("/", "."))
         with open(save_path, 'w', newline='', encoding='utf-8') as f:
             writer = csv.writer(f, delimiter='\t')
             for row in dataset:
@@ -48,7 +48,7 @@ class EDANLPAugmentor:
         tsv_path = self.hf_dataset_to_tsv(dataset)
         aug_path = self.run_augmentation_script(tsv_path, num_aug)
         aug_dataset = load_dataset('csv', data_files=aug_path, delimiter='\t', column_names=['label', 'text'])["train"]
-        # os.remove(tsv_path); os.remove(aug_path)
+        os.remove(tsv_path); os.remove(aug_path)
         return aug_dataset
 
 if __name__ == "__main__":

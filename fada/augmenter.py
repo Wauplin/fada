@@ -123,6 +123,7 @@ class Augmenter:
                 "transforms_applied": [t for t in transforms_applied],
                 "is_changed": is_changed
             }
+
         else:
             out = {
                 "text": new_texts, 
@@ -131,6 +132,7 @@ class Augmenter:
                 "transforms_applied": transforms_applied,
                 "is_changed": is_changed
             }
+
         
         return out
             

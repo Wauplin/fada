@@ -44,11 +44,11 @@ class FADAAugmenter:
 
     def reweight_tfim(self, weights : dict):
 
-        tfim_matcher = os.path.join(self.cfg.fada.tfim_dir, f"{self.cfg.augment.tfim_dataset_builder_name}.{self.cfg.augment.tfim_dataset_config_name}*")
+        tfim_matcher = os.path.join(self.cfg.fada.tfim_dir, f"{self.cfg.augment.tfim_dataset_builder_name}.{self.cfg.augment.tfim_dataset_config_name}*".replace("/", "."))
         matrix_paths = glob.glob(tfim_matcher)
         max_id = int(max([m.split("-")[-1].split(".")[0] for m in matrix_paths]))
 
-        save_name = f"{self.cfg.augment.tfim_dataset_builder_name}.{self.cfg.augment.tfim_dataset_config_name}.fada20"
+        save_name = f"{self.cfg.augment.tfim_dataset_builder_name}.{self.cfg.augment.tfim_dataset_config_name}.fada20".replace("/", ".")
 
         counts    = np.load(os.path.join(self.cfg.fada.tfim_dir, f"{save_name}.counts-step-{max_id}.npy"))
         changes   = np.load(os.path.join(self.cfg.fada.tfim_dir, f"{save_name}.changes-step-{max_id}.npy"))

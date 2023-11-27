@@ -58,12 +58,12 @@ def fada_augment(cfg: DictConfig) -> None:
     log.info(f"Running augment with {num_transforms} to choose from...")
     
     log.info(f"Constructing original (unaugmented) dataset...")
-    save_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.original.{cfg.dataset.num_per_class}"
+    save_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.original.{cfg.dataset.num_per_class}".replace("/", ".")
     save_path = os.path.join(cfg.augment.save_dir, save_name)
 
     if not os.path.exists(save_path):
-
-        annotated_dataset_path = os.path.join(cfg.dataset_dir, f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.annotated")
+        annotated_dataset_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.annotated".replace("/", ".")
+        annotated_dataset_path = os.path.join(cfg.dataset_dir, annotated_dataset_name)
         if os.path.exists(annotated_dataset_path):
             dataset = load_from_disk(annotated_dataset_path)
             features = np.array(dataset["features"])
@@ -104,7 +104,7 @@ def fada_augment(cfg: DictConfig) -> None:
     fada20_augmenter    = FADAAugmenter(transforms=transforms, cfg=cfg)
 
     log.info(f"Beginning EDA augmentation...")
-    eda_dataset_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.eda{num_transforms}.{cfg.dataset.num_per_class}"
+    eda_dataset_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.eda{num_transforms}.{cfg.dataset.num_per_class}".replace("/", ".")
     eda_save_path = os.path.join(cfg.augment.save_dir, eda_dataset_name)
     
     if not os.path.exists(eda_save_path):
@@ -120,7 +120,7 @@ def fada_augment(cfg: DictConfig) -> None:
         log.info(f"found {eda_save_path}... skipping...")
 
     log.info(f"Beginning CheckList augmentation...")
-    checklist_dataset_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.checklist{num_transforms}.{cfg.dataset.num_per_class}"
+    checklist_dataset_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.checklist{num_transforms}.{cfg.dataset.num_per_class}".replace("/", ".")
     checklist_save_path = os.path.join(cfg.augment.save_dir, checklist_dataset_name)
     if not os.path.exists(checklist_save_path):
         checklist_dataset = checklist_augmenter(
@@ -135,7 +135,7 @@ def fada_augment(cfg: DictConfig) -> None:
         log.info(f"found {checklist_save_path}... skipping...")
 
     log.info(f"Beginning TAA augmentation...")
-    taa_dataset_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.taa{num_transforms}.{cfg.dataset.num_per_class}"
+    taa_dataset_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.taa{num_transforms}.{cfg.dataset.num_per_class}".replace("/", ".")
     taa_save_path = os.path.join(cfg.augment.save_dir, taa_dataset_name)
     if not os.path.exists(taa_save_path):
         if "glue" in cfg.dataset.builder_name:
@@ -157,7 +157,7 @@ def fada_augment(cfg: DictConfig) -> None:
         log.info(f"found {taa_save_path}... skipping...")
 
     log.info(f"Beginning uniform augmentation...")
-    uniform_dataset_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.uniform20{num_transforms}.{cfg.dataset.num_per_class}"
+    uniform_dataset_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.uniform20{num_transforms}.{cfg.dataset.num_per_class}".replace("/", ".")
     uniform_save_path = os.path.join(cfg.augment.save_dir, uniform_dataset_name)
     if not os.path.exists(uniform_save_path):
         uniform_dataset = uniform20_augmenter(
@@ -175,7 +175,7 @@ def fada_augment(cfg: DictConfig) -> None:
         log.info(f"found {uniform_save_path}... skipping...")
 
     log.info(f"Beginning FADA augmentation...")
-    fada_dataset_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.fada20{num_transforms}.{cfg.dataset.num_per_class}"
+    fada_dataset_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.fada20{num_transforms}.{cfg.dataset.num_per_class}".replace("/", ".")
     fada_save_path = os.path.join(cfg.augment.save_dir, fada_dataset_name)
     if not os.path.exists(fada_save_path):
         fada_dataset = fada20_augmenter(

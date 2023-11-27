@@ -12,32 +12,21 @@ def _tokenizer(text, token_pattern=r"(?u)\b\w\w+\b"):
     return token_pattern.findall(text)
 
 
-def train_tfidf(dataset, data_path=None):
+def train_tfidf(dataset, name):
     abspath = C.get()['abspath']
-    model_path = '{}/models/tfidf/{}'.format(abspath, dataset)
-    path = C.get()['dataset']['path']
-    data_dir = C.get()['dataset']['data_dir']
-    data_files = C.get()['dataset']['data_files']
-    text_key = C.get()['dataset']['text_key']
+    model_path = '{}/models/tfidf/{}'.format(abspath, name)
 
-    if not os.path.exists(model_path):
-        print('Make TF-IDF model directory: %s' % model_path)
-        os.makedirs(model_path)
+    print('Make TF-IDF model directory: %s' % model_path)
+    os.makedirs(model_path, exist_ok=True)
+    examples = get_examples(dataset, 'text')
+    texts = [d.text_a if d.text_b is None else d.text_a + ' ' + d.text_b for d in examples]
 
-        if path is None:
-            dataset = load_dataset(path=dataset, data_dir=data_dir, data_files=data_files, split='train')
-        else:
-            dataset = load_dataset(path=path, name=dataset, data_dir=data_dir, data_files=data_files, split='train')
-        examples = get_examples(dataset, text_key)
-        texts = [d.text_a if d.text_b is None else d.text_a + ' ' + d.text_b for d in examples]
+    # Tokenize input
+    train_x_tokens = [_tokenizer(x) for x in texts]  # List[List[str]]
 
-        # Tokenize input
-        train_x_tokens = [_tokenizer(x) for x in texts]  # List[List[str]]
+    # Train TF-IDF models
+    print('Start training TF-IDF model. It will take a long time if the training dataset is too large')
+    tfidf_model = nmw.TfIdf()
+    tfidf_model.train(train_x_tokens)
+    tfidf_model.save(model_path)
 
-        # Train TF-IDF models
-        print('Start training TF-IDF model. It will take a long time if the training dataset is too large')
-        tfidf_model = nmw.TfIdf()
-        tfidf_model.train(train_x_tokens)
-        tfidf_model.save(model_path)
-    else:
-        print('Use exist TF-IDF model')

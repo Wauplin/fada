@@ -52,16 +52,13 @@ class TextAutoAugmenter:
 
         from fada.augmenters.text_autoaugment.taa.search_and_augment import augment_with_presearched_policy
 
-        # Save the dataset
-        file_name = f"{name}.original.csv"
-
         config_params = {
             'model': {'type': 'Bert'},
             'dataset': {
                 'path': None,
                 'name': name,
                 'data_dir': save_path,
-                'data_files': {'train': file_name},
+                'data_files': {'train': f"{name}.original.csv"},
                 'text_key': 'text'
             },
             'abspath': self.augmenter_directory,

@@ -54,7 +54,7 @@ def augment_with_presearched_policy(dataset, configfile=None):
     # else:
     #     train_dataset = load_dataset(path=path, name=name, data_dir=data_dir, data_files=data_files, split='train')
 
-    train_tfidf(name)  # calculate tf-idf score for TS and TI operations
+    train_tfidf(dataset, name)  # calculate tf-idf score for TS and TI operations
 
     assert name in list(policy_map.keys()), "No policy was found for this dataset."
     policy = policy_map[name]

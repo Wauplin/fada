@@ -72,7 +72,7 @@ def implement_policy_probabilities(policy, features):
 
 def transforms_to_ids(sampled_transforms, all_transforms):
     transforms_ids = [all_transforms.index(i) for i in sampled_transforms]
-    transforms_applied = np.zeros(len(all_transforms), dtype=np.int32)
+    transforms_applied = np.zeros(len(all_transforms), dtype=np.int64)
     transforms_applied[transforms_ids] = 1
     return transforms_applied
 
