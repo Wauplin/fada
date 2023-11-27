@@ -135,7 +135,7 @@ def fada_augment(cfg: DictConfig) -> None:
         log.info(f"found {checklist_save_path}... skipping...")
 
     log.info(f"Beginning TAA augmentation...")
-    taa_dataset_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.taa{num_transforms}.{cfg.dataset.num_per_class}".replace("/", ".")
+    taa_dataset_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.taa.{cfg.dataset.num_per_class}".replace("/", ".")
     taa_save_path = os.path.join(cfg.augment.save_dir, taa_dataset_name)
     if not os.path.exists(taa_save_path):
         if "glue" in cfg.dataset.builder_name:
@@ -157,7 +157,7 @@ def fada_augment(cfg: DictConfig) -> None:
         log.info(f"found {taa_save_path}... skipping...")
 
     log.info(f"Beginning uniform augmentation...")
-    uniform_dataset_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.uniform20{num_transforms}.{cfg.dataset.num_per_class}".replace("/", ".")
+    uniform_dataset_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.uniform{num_transforms}.{cfg.dataset.num_per_class}".replace("/", ".")
     uniform_save_path = os.path.join(cfg.augment.save_dir, uniform_dataset_name)
     if not os.path.exists(uniform_save_path):
         uniform_dataset = uniform20_augmenter(
@@ -175,7 +175,7 @@ def fada_augment(cfg: DictConfig) -> None:
         log.info(f"found {uniform_save_path}... skipping...")
 
     log.info(f"Beginning FADA augmentation...")
-    fada_dataset_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.fada20{num_transforms}.{cfg.dataset.num_per_class}".replace("/", ".")
+    fada_dataset_name = f"{cfg.dataset.builder_name}.{cfg.dataset.config_name}.fada{num_transforms}.{cfg.dataset.num_per_class}".replace("/", ".")
     fada_save_path = os.path.join(cfg.augment.save_dir, fada_dataset_name)
     if not os.path.exists(fada_save_path):
         fada_dataset = fada20_augmenter(
