@@ -11,7 +11,7 @@ from datasets import load_dataset, load_from_disk
 
 from fada.utils import *
 from fada.extractors import (
-    AMRFeatureExtractor,
+    PerformanceExtractor,
     AlignmentMetric,
     FluencyMetric,
     GrammarMetric,
