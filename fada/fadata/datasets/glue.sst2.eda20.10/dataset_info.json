@@ -1,0 +1,42 @@
+{
+  "builder_name": "csv",
+  "citation": "",
+  "config_name": "default",
+  "dataset_name": "csv",
+  "dataset_size": 3942,
+  "description": "",
+  "download_checksums": {
+    "/scratch/fabrice/fada/./fada/augmenters/eda_nlp/None.None.temp.eda.tsv": {
+      "num_bytes": 3222,
+      "checksum": null
+    }
+  },
+  "download_size": 3222,
+  "features": {
+    "label": {
+      "dtype": "int64",
+      "_type": "Value"
+    },
+    "text": {
+      "dtype": "string",
+      "_type": "Value"
+    }
+  },
+  "homepage": "",
+  "license": "",
+  "size_in_bytes": 7164,
+  "splits": {
+    "train": {
+      "name": "train",
+      "num_bytes": 3942,
+      "num_examples": 80,
+      "dataset_name": "csv"
+    }
+  },
+  "version": {
+    "version_str": "0.0.0",
+    "major": 0,
+    "minor": 0,
+    "patch": 0
+  }
+}

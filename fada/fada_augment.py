@@ -90,7 +90,7 @@ def fada_augment(cfg: DictConfig) -> None:
     log.info(dataset)
 
     log.info("Removing features from original dataset.")
-    keep_cols = ['text', 'label', 'idx']
+    keep_cols = ['text', 'label']
     features = dataset["features"]
     dataset = dataset.remove_columns([c for c in dataset.features.keys() if c not in keep_cols])
     log.info(dataset)
@@ -145,10 +145,14 @@ def fada_augment(cfg: DictConfig) -> None:
     taa_save_path = os.path.join(cfg.augment.save_dir, taa_dataset_name)
     if not os.path.exists(taa_save_path):
         try:
-            if "glue" in cfg.dataset.builder_name:
-                name = cfg.dataset.config_name
-            elif "sst5" in cfg.dataset.builder_name or "sst" in cfg.dataset.config_name:
+            if "sst2" in cfg.dataset.config_name:
+                name = "sst2"
+            elif "sst5" in cfg.dataset.builder_name:
                 name = "sst5"
+            elif "yelp_polarity" in cfg.dataset.builder_name:
+                name = "yelp2"
+            elif "yelp_review_full" in cfg.dataset.builder_name:
+                name = "yelp5"
             else:
                 name = cfg.dataset.builder_name
             taa_dataset = taa_augmenter(

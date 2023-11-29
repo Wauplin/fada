@@ -3,13 +3,13 @@
 # Define an associative array for builder_name and config_name pairs
 declare -A datasets
 datasets["glue"]="sst2"
-datasets["imdb"]="plain_text"
-datasets["ag_news"]="default"
-datasets["yahoo_answers_topics"]="yahoo_answers_topics"
-datasets["SetFit/sst5"]="default"
-datasets["trec"]="default"
+# datasets["imdb"]="plain_text"
+# datasets["ag_news"]="default"
+# datasets["yahoo_answers_topics"]="yahoo_answers_topics"
+# datasets["SetFit/sst5"]="default"
+# datasets["trec"]="default"
 datasets["yelp_polarity"]="plain_text"
-datasets["yelp_review_full"]="yelp_review_full"
+# datasets["yelp_review_full"]="yelp_review_full"
 
 # Array for num_per_class values
 num_per_classes=(10 200 2500)

@@ -1,0 +1,17 @@
+{
+  "_data_files": [
+    {
+      "filename": "data-00000-of-00001.arrow"
+    }
+  ],
+  "_fingerprint": "fc18e40420fc6224",
+  "_format_columns": [
+    "features",
+    "label",
+    "text"
+  ],
+  "_format_kwargs": {},
+  "_format_type": null,
+  "_output_all_columns": false,
+  "_split": null
+}
