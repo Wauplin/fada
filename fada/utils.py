@@ -120,6 +120,7 @@ def prepare_splits(dataset_dict, train_val_split = 0.9, val_test_split = 0.5, se
 def rename_text_columns(dataset_dict, remove_unused=True):
     text_columns = ["sentence"]
     val_columns = ["val", "valid"]
+    label_columns = ["coarse_label"]
     for split_name, dataset in dataset_dict.items():
         if dataset.builder_name == "yahoo_answers_topics":
             dataset_dict[split_name] = dataset.map(
@@ -132,6 +133,8 @@ def rename_text_columns(dataset_dict, remove_unused=True):
                 dataset_dict[split_name] = dataset.rename_column(column, "text")
             if column in val_columns:
                 dataset_dict[split_name] = dataset.rename_column(column, "validation")
+            if column in label_columns:
+                dataset_dict[split_name] = dataset.rename_column(column, "label")
     return dataset_dict
 
 def remove_unused_columns(dataset_dict):
