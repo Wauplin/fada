@@ -54,7 +54,8 @@ def quality(cfg: DictConfig):
     ## Search for datasets ######################################
     #############################################################
 
-    dataset_paths = glob.glob(os.path.join(cfg.dataset_dir, cfg.quality.dataset_matcher))
+    path_matcher = os.path.join(cfg.dataset_dir, cfg.quality.dataset_matcher.replace("/", "."))
+    dataset_paths = glob.glob(path_matcher)
     dataset_paths = [p.replace("\\", "/") for p in dataset_paths] # fix for formatting issues in windows
     dataset_paths = [p for p in dataset_paths if "annotated" not in p]
     dataset_paths.sort()
@@ -109,8 +110,7 @@ def quality(cfg: DictConfig):
         log.info(f"evaluation_dataset: {evaluation_dataset}")
 
         log.info("Loading comparison dataset of same size as the transformed dataset...")
-        raw_datasets = load_dataset(cfg.dataset.builder_name, 
-                                    cfg.dataset.config_name)
+        raw_datasets = load_dataset(cfg.dataset.builder_name, cfg.dataset.config_name, cache_dir="/data1/fabricehc/.cache")
         
         if 'sst2' in cfg.dataset.config_name:
             raw_datasets.pop("test") # test set is not usable (all labels -1)
@@ -245,9 +245,10 @@ def quality(cfg: DictConfig):
 
         results.append(out)
 
-        log.info(f"Saving results to {cfg.quality.save_path}")
+        results_path = os.path.join(cfg.results_dir, cfg.quality.save_path.replace("/", "."))
+        log.info(f"Saving results to {results_path}")
         df = pd.DataFrame(results)
-        df.to_csv(cfg.quality.save_path, index=False)
+        df.to_csv(results_path, index=False)
 
 if __name__ == "__main__":
     quality()

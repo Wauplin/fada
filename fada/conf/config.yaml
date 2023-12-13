@@ -70,7 +70,7 @@ train:
     max_val_size: 250
     max_test_size: 1000
     trained_models_dir: "./eval/pretrained"
-    save_path: "${results_dir}/${dataset.builder_name}.${dataset.config_name}.training-post-review-gen.csv"
+    save_path: "{dataset.builder_name}.${dataset.config_name}.training-post-review-gen.csv"
 
 robustness:
     num_runs: 1
@@ -90,4 +90,4 @@ quality:
     dataset_matcher: "${dataset.builder_name}.${dataset.config_name}.*"
     model_id: "${alignment_extractor.model_id}"
     max_dataset_size: 100
-    save_path: "${results_dir}/${dataset.builder_name}.${dataset.config_name}.quality.csv"
+    save_path: "${dataset.builder_name}.${dataset.config_name}.quality.csv"
